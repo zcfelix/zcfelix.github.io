@@ -1,0 +1,731 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="svn,docker," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="Docker部分安装Docker官方文档已经写得足够详细了，这里不再赘述。根据自己的操作系统，参考对应的文档即可。
+
+Docker for Mac
+Docker for Windows
+Docker for Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Docker中搭建基于Http/Https的SVN服务器">
+<meta property="og:url" content="http://github.com/zcfelix/zcfelix.github.io/2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/index.html">
+<meta property="og:site_name" content="Felix's Blog">
+<meta property="og:description" content="Docker部分安装Docker官方文档已经写得足够详细了，这里不再赘述。根据自己的操作系统，参考对应的文档即可。
+
+Docker for Mac
+Docker for Windows
+Docker for Linux">
+<meta property="og:updated_time" content="2016-10-30T06:24:21.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在Docker中搭建基于Http/Https的SVN服务器">
+<meta name="twitter:description" content="Docker部分安装Docker官方文档已经写得足够详细了，这里不再赘述。根据自己的操作系统，参考对应的文档即可。
+
+Docker for Mac
+Docker for Windows
+Docker for Linux">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://github.com/zcfelix/zcfelix.github.io/2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/"/>
+
+
+  <title> 在Docker中搭建基于Http/Https的SVN服务器 | Felix's Blog </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Felix's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                在Docker中搭建基于Http/Https的SVN服务器
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-26T19:51:00+08:00" content="2016-10-26">
+              2016-10-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Tech/" itemprop="url" rel="index">
+                    <span itemprop="name">Tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Docker部分"><a href="#Docker部分" class="headerlink" title="Docker部分"></a>Docker部分</h2><h3 id="安装Docker"><a href="#安装Docker" class="headerlink" title="安装Docker"></a>安装Docker</h3><p>官方文档已经写得足够详细了，这里不再赘述。根据自己的操作系统，参考对应的文档即可。</p>
+<ul>
+<li><a href="https://docs.docker.com/docker-for-mac/" target="_blank" rel="external">Docker for Mac</a></li>
+<li><a href="https://docker.github.io/docker-for-windows/" target="_blank" rel="external">Docker for Windows</a></li>
+<li><a href="https://docker.github.io/engine/installation/linux/" target="_blank" rel="external">Docker for Linux</a></li>
+</ul>
+<a id="more"></a>
+<h3 id="在Docker中安装centos镜像"><a href="#在Docker中安装centos镜像" class="headerlink" title="在Docker中安装centos镜像"></a>在Docker中安装centos镜像</h3><p>选用基于centos的svn服务器，拉取最新版本的centos镜像<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ docker pull contos:latest</div></pre></td></tr></table></figure></p>
+<p>在Docker中加载运行centos<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ docker -t -i centos:latest /bin/bash</div></pre></td></tr></table></figure></p>
+<p>此时，我们可以通过终端与centos进行交互，docker部分安装完成。</p>
+<hr>
+<h2 id="CentOS部分"><a href="#CentOS部分" class="headerlink" title="CentOS部分"></a>CentOS部分</h2><h3 id="安装必须的软件包"><a href="#安装必须的软件包" class="headerlink" title="安装必须的软件包"></a>安装必须的软件包</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ yum install subversion mysql-server httpd mod_dav_svn mod_ssl mod_perl sendmail wget gcc-c++ make unzip perl* ntsysv vim-enhanced</div></pre></td></tr></table></figure>
+<h3 id="创建Subversion版本库"><a href="#创建Subversion版本库" class="headerlink" title="创建Subversion版本库"></a>创建Subversion版本库</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ mkdir /etc/svn/</div><div class="line">$ mkdir /etc/svn/repos</div><div class="line">$ svnadmin create --fs-type fsfs /etc/svn/repos</div></pre></td></tr></table></figure>
+<p>在创建版本库的时候，首先要指定数据存储方式。在Subversion中，版本数据库有两种数据存储方式，即通过Berkeley DB数据库存储，或者使用普通文件的形式，称为FSFS。总体来说，FSFS要优于Berkeley DB，因此我们通过–fs-type选项指定了FSFS的存储方式。两种存储方式的具体的优缺点可以参考官方文档<a href="http://svnbook.org/" target="_blank" rel="external">svn book</a> 。</p>
+<h3 id="添加项目"><a href="#添加项目" class="headerlink" title="添加项目"></a>添加项目</h3><p>完成版本库的创建之后，可以往里面添加项目。我们可以将不同的项目放在不同的版本库中，也可以放在同一个版本库中。选用同一个版本库，升级与备份更为方便，但是由于访问权限控制是针对整个版本库的，将不同的项目放在同一个版本库中会使权限配置更为复杂。可以根据实际情况考虑，这里使用统一的版本库进行管理不同的项目。</p>
+<p>由于一直使用git和github，我在想有没有<a href="svnhub.com">svnhub</a>呢？抱着试试的态度google了一下，结果发现github也支持<a href="https://help.github.com/articles/support-for-subversion-clients/" target="_blank" rel="external">svn管理项目</a>，所以直接通过github添加项目进行测试。</p>
+<p>创建codebase目录，模拟客户端代码仓库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ mkdir /codebase</div></pre></td></tr></table></figure></p>
+<p>通过github导入第一个项目<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ cd /codebase</div><div class="line">$ svn co --depth empty https://github.com/zcfelix/leetcode</div><div class="line">$ cd /codebase/leetcode</div><div class="line">$ svn up trunk</div><div class="line">$ svn up --depth empty branches</div><div class="line">$ svn up branches</div></pre></td></tr></table></figure></p>
+<p>通过github导入第二个项目<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ cd /codebase</div><div class="line">$ svn co --depth empty https://github.com/zcfelix/sample</div><div class="line">$ cd /codebase/sample</div><div class="line">$ svn up trunk</div><div class="line">$ svn up --depth empty branches</div><div class="line">$ svn up branches</div></pre></td></tr></table></figure></p>
+<p>利用svn import将客户端项目导入到服务器repo中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ svn import /codebase file:///etc/svn/repos/ --message &quot;init&quot;</div></pre></td></tr></table></figure></p>
+<p>项目导入完成后，使用svn list命令查看项目是否导入正确<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ svn list --verbose file:///etc/svn/repos</div></pre></td></tr></table></figure></p>
+<p>如果要查看最新修订版本的信息，可以使用svnlook info命令<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ svnlook info <span class="regexp">/etc/</span>svn<span class="regexp">/repos/</span></div></pre></td></tr></table></figure></p>
+<h3 id="服务器基本配置"><a href="#服务器基本配置" class="headerlink" title="服务器基本配置"></a>服务器基本配置</h3><p>修改httpd的配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ vim /etc/httpd/conf/httpd.conf</div></pre></td></tr></table></figure>
+<p>在文件末尾添加如下配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;Location /svn&gt;</div><div class="line">DAV svn</div><div class="line">SVNParentPath /etc/svn</div><div class="line">&lt;/Location&gt;</div></pre></td></tr></table></figure></p>
+<p>为了通过host上的浏览器对我们的配置进行验证，我们需要暴露docker容器的端口，因此需要对容器进行重启。但是一定记得先<strong>保存容器状态</strong>，否则会丢失现在所有的工作。在host上打开终端，输入以下命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ docker commit -m &quot;Basic configuraion of svn&quot; -a &quot;Felix Zhou&quot; 7a4775af0d92 zcfelix/svn:v1</div></pre></td></tr></table></figure></p>
+<p>其中，-m选项指定了提交信息，-a指定了作者信息，7a4775af0d92是当前容器id，即我们正在运行的容器，在centos中可以通过命令行前的[root@7a4775af0d92]找到。zcfelix/svn:v1是当前容器状态保存为新的image的标签。成功保存之后，可以看到一条SHA256信息，然后可以通过在host终端运行docker images命令可以查看我们保存的image。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ docker images</div></pre></td></tr></table></figure></p>
+<p>退出当前运行容器<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ <span class="keyword">exit</span></div></pre></td></tr></table></figure></p>
+<p>host中重新启动容器并绑定端口（<strong>记得先保存再退出</strong>）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ docker run -t -i -p 80:80 zcfelix/svn:v1 /bin/bash</div></pre></td></tr></table></figure></p>
+<p>第一个80表示本地host的端口号，第二个80表示docker容器的端口号，意思将容器的80端口暴露给host的80端口。然后在docker中启动svn服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ httpd</div></pre></td></tr></table></figure></p>
+<p>利用host上的浏览器进行验证<br>此时，我们就可以通过本地的浏览器输入<a href="http://localhost/svn/repos/" target="_blank" rel="external">http://localhost/svn/repos/</a> 访问我们的Subversion版本库了。</p>
+<hr>
+<h2 id="服务器的访问权限控制"><a href="#服务器的访问权限控制" class="headerlink" title="服务器的访问权限控制"></a>服务器的访问权限控制</h2><p>上述的基本配置意味着任何人对我们的版本库都具有读写权限，显然这是不够安全的，Apache为我们提供了基本的权限设置。</p>
+<h3 id="生成用户文件"><a href="#生成用户文件" class="headerlink" title="生成用户文件"></a>生成用户文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ htpasswd -c -m /etc/svn/repos/conf/password felix</div><div class="line">$ htpassed -m /etc/svn/repos/conf/password susu</div></pre></td></tr></table></figure>
+<p>第一行代码的-c表示创建文件，felix是用户名，然后根据提示输入密码和确认密码即可。第二行-m代表在password文件中新增用户susu，同样的需要输入密码和确认信息。</p>
+<h3 id="修改httpd配置信息"><a href="#修改httpd配置信息" class="headerlink" title="修改httpd配置信息"></a>修改httpd配置信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;Location /svn&gt;</div><div class="line">DAV svn</div><div class="line">SVNParentPath /etc/svn</div><div class="line">AuthName &quot;svn repos&quot;</div><div class="line">AuthType Basic</div><div class="line">AuthName &quot;svn repos&quot;</div><div class="line">AuthBasicProvider file</div><div class="line">AuthUserFile /etc/svn/repos/conf/passwd</div><div class="line">Require valid-user</div><div class="line">&lt;/Location&gt;</div></pre></td></tr></table></figure>
+<h3 id="修改svn目录的所有者"><a href="#修改svn目录的所有者" class="headerlink" title="修改svn目录的所有者"></a>修改svn目录的所有者</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chown -R apache.apache /etc/svn/repos</div></pre></td></tr></table></figure>
+<h3 id="重启服务器"><a href="#重启服务器" class="headerlink" title="重启服务器"></a>重启服务器</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ httpd -k restart</div></pre></td></tr></table></figure>
+<p>此时可以通过<a href="http://localhost/svn/repos" target="_blank" rel="external">http://localhost/svn/repos</a> 访问，但是需要输入认证信息，因此输入刚才的用户名felix和你设置的密码即可。</p>
+<h2 id="配置ssl实现安全的网络传输"><a href="#配置ssl实现安全的网络传输" class="headerlink" title="配置ssl实现安全的网络传输"></a>配置ssl实现安全的网络传输</h2><h3 id="利用openssl生成一个自签名的证书"><a href="#利用openssl生成一个自签名的证书" class="headerlink" title="利用openssl生成一个自签名的证书"></a>利用openssl生成一个自签名的证书</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">$ cd /etc/pki/CA</div><div class="line">$ openssl req -new -x509 -extensions v3_ca -keyout private/myserver.key -out certs/myserver.crt -days 3650</div><div class="line">$ chmod 0400 private/myserver.key</div><div class="line">$ mv private/myserver.key /etc/ssl</div><div class="line">$ mv private/myserver.crt /etc/ssl</div></pre></td></tr></table></figure>
+<h3 id="修改httpd配置"><a href="#修改httpd配置" class="headerlink" title="修改httpd配置"></a>修改httpd配置</h3><p>由于httpd.conf最后一行会自动加载conf.d中的配置，我们可以利用这一点，在conf.d目录下新建一个文件记录ssl的配置信息，同时对系统默认的ssl配置信息进行备份。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mv /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/ssl.conf.bak</div><div class="line">touch /etc/httpd/conf.d/ssl.conf</div></pre></td></tr></table></figure></p>
+<p>配置信息如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">Listen 443</div><div class="line">SSLSessionCache none</div><div class="line">SSlRandomSeed startup builtin</div><div class="line">ErrorLog logs/ssl_error_log</div><div class="line">Loglevel info</div><div class="line">&lt;VirtualHost *:443&gt;</div><div class="line">ServerName 87f8eb5eb028</div><div class="line">SSLEngine on</div><div class="line">SSLCertificateFile /etc/ssl/myserver.crt</div><div class="line">SSLCertificateKeyFile /etc/ssl/myserver.key</div><div class="line">&lt;/VirtualHost&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="验证Https协议"><a href="#验证Https协议" class="headerlink" title="验证Https协议"></a>验证Https协议</h3><p>由于我们自签名的证书不受信任，因此我们不能通过host上的浏览器来验证我们的ssl是否配置成功（当然，在浏览器中对证书添加信任可以做到）。我们可以在docker中利用svn命令进行简单的验证。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ httpd -k restart</div><div class="line">$ mkdir /svn-tmp</div><div class="line">$ cd /svn-tmp</div><div class="line">$ svn co https://172.17.0.3/svn/repos/leetcode</div></pre></td></tr></table></figure></p>
+<p>这里的IP地址根据你自己机器上的地址修改。这时，可能会受到证书信任信息，按照提示选择就OK。如果最后成功拉取了代码到本地，证明我们的ssl配置已经生效了。</p>
+<hr>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="http://www.ha97.com/4467.html" target="_blank" rel="external">CentOS搭建SVN</a><br><a href="https://www.ibm.com/developerworks/cn/java/j-lo-apache-subversion/" target="_blank" rel="external">用Apache和Subversion搭建安全的版本控制环境</a><br><a href="https://docs.docker.com/engine/tutorials/dockerimages/" target="_blank" rel="external">Build your own images</a><br><a href="http://httpd.apache.org/docs/2.4/ssl/ssl_howto.html" target="_blank" rel="external">SSL/TLS Strong Encryption</a><br><a href="http://dev.antoinesolutions.com/openssl/certificate-authority" target="_blank" rel="external">Openssl Certificate Authority</a><br><a href="http://dev.antoinesolutions.com/apache-server/mod_ssl" target="_blank" rel="external">Install and Configurate mod_ssl</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/svn/" rel="tag">#svn</a>
+          
+            <a href="/tags/docker/" rel="tag">#docker</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/22/软件测试/" rel="prev" title="软件测试">
+                软件测试 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/"
+           data-title="在Docker中搭建基于Http/Https的SVN服务器" data-url="http://github.com/zcfelix/zcfelix.github.io/2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://ofnzfzy9m.bkt.clouddn.com/images/avatars/whale.jpg?imageView2/1/w/200/h/200"
+               alt="Felix Zhou" />
+          <p class="site-author-name" itemprop="name">Felix Zhou</p>
+          <p class="site-description motion-element" itemprop="description">岁月如冰河，热望如鲸歌</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zcfelix" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://douban.com/people/zcfelix" target="_blank" title="Douban">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Douban
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/faksaa" target="_blank" title="Zhihu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Zhihu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.linkedin.com/in/ying-zhou-7b9b68124" target="_blank" title="Linkedin">
+                  
+                    <i class="fa fa-fw fa-linkedin"></i>
+                  
+                  Linkedin
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker部分"><span class="nav-number">1.</span> <span class="nav-text">Docker部分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装Docker"><span class="nav-number">1.1.</span> <span class="nav-text">安装Docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在Docker中安装centos镜像"><span class="nav-number">1.2.</span> <span class="nav-text">在Docker中安装centos镜像</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CentOS部分"><span class="nav-number">2.</span> <span class="nav-text">CentOS部分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装必须的软件包"><span class="nav-number">2.1.</span> <span class="nav-text">安装必须的软件包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建Subversion版本库"><span class="nav-number">2.2.</span> <span class="nav-text">创建Subversion版本库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加项目"><span class="nav-number">2.3.</span> <span class="nav-text">添加项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#服务器基本配置"><span class="nav-number">2.4.</span> <span class="nav-text">服务器基本配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器的访问权限控制"><span class="nav-number">3.</span> <span class="nav-text">服务器的访问权限控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生成用户文件"><span class="nav-number">3.1.</span> <span class="nav-text">生成用户文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改httpd配置信息"><span class="nav-number">3.2.</span> <span class="nav-text">修改httpd配置信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改svn目录的所有者"><span class="nav-number">3.3.</span> <span class="nav-text">修改svn目录的所有者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重启服务器"><span class="nav-number">3.4.</span> <span class="nav-text">重启服务器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置ssl实现安全的网络传输"><span class="nav-number">4.</span> <span class="nav-text">配置ssl实现安全的网络传输</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#利用openssl生成一个自签名的证书"><span class="nav-number">4.1.</span> <span class="nav-text">利用openssl生成一个自签名的证书</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改httpd配置"><span class="nav-number">4.2.</span> <span class="nav-text">修改httpd配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证Https协议"><span class="nav-number">4.3.</span> <span class="nav-text">验证Https协议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Felix Zhou</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zcfelix"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>

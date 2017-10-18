@@ -1,0 +1,754 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="agile,test," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="什么是测试根据Wiki的定义，软件测试是指在规定的条件下对程序进行操作，以发现程序错误，衡量软件质量 ，并对其是否能满足设计要求进行评估的过程。那么测试在软件开发中扮演什么样的角色，为我们提供什么价值呢？如果在项目中引入测试，我们应该按照什么样的原则去安排测试呢？带着这些问题，我们先来看看常见的测试有哪些。
+软件架构与测试分类我们常见的测试有单元测试、集成测试、组件测试、端到端测试、性能测试、安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="软件测试">
+<meta property="og:url" content="http://github.com/zcfelix/zcfelix.github.io/2017/09/22/软件测试/index.html">
+<meta property="og:site_name" content="Felix's Blog">
+<meta property="og:description" content="什么是测试根据Wiki的定义，软件测试是指在规定的条件下对程序进行操作，以发现程序错误，衡量软件质量 ，并对其是否能满足设计要求进行评估的过程。那么测试在软件开发中扮演什么样的角色，为我们提供什么价值呢？如果在项目中引入测试，我们应该按照什么样的原则去安排测试呢？带着这些问题，我们先来看看常见的测试有哪些。
+软件架构与测试分类我们常见的测试有单元测试、集成测试、组件测试、端到端测试、性能测试、安全">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/software-architecture.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/unit-test.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/integration-test-boundary.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/component-test-boundary.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/end-to-end-test.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/test-pyramid.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/agile-test-quardrant.png">
+<meta property="og:updated_time" content="2017-09-23T06:39:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="软件测试">
+<meta name="twitter:description" content="什么是测试根据Wiki的定义，软件测试是指在规定的条件下对程序进行操作，以发现程序错误，衡量软件质量 ，并对其是否能满足设计要求进行评估的过程。那么测试在软件开发中扮演什么样的角色，为我们提供什么价值呢？如果在项目中引入测试，我们应该按照什么样的原则去安排测试呢？带着这些问题，我们先来看看常见的测试有哪些。
+软件架构与测试分类我们常见的测试有单元测试、集成测试、组件测试、端到端测试、性能测试、安全">
+<meta name="twitter:image" content="http://ofnzfzy9m.bkt.clouddn.com//agile-test/software-architecture.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://github.com/zcfelix/zcfelix.github.io/2017/09/22/软件测试/"/>
+
+
+  <title> 软件测试 | Felix's Blog </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Felix's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                软件测试
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-09-22T11:02:23+08:00" content="2017-09-22">
+              2017-09-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Tech/" itemprop="url" rel="index">
+                    <span itemprop="name">Tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/09/22/软件测试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/09/22/软件测试/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是测试"><a href="#什么是测试" class="headerlink" title="什么是测试"></a>什么是测试</h2><p>根据Wiki的定义，<a href="https://en.wikipedia.org/wiki/Software_testing" target="_blank" rel="external">软件测试</a>是指在规定的条件下对程序进行操作，以发现程序错误，衡量软件质量 ，并对其是否能满足设计要求进行评估的过程。那么测试在软件开发中扮演什么样的角色，为我们提供什么价值呢？如果在项目中引入测试，我们应该按照什么样的原则去安排测试呢？带着这些问题，我们先来看看常见的测试有哪些。</p>
+<h2 id="软件架构与测试分类"><a href="#软件架构与测试分类" class="headerlink" title="软件架构与测试分类"></a>软件架构与测试分类</h2><p>我们常见的测试有单元测试、集成测试、组件测试、端到端测试、性能测试、安全测试、探索性测试、验收测试、Alpha/Beta 测试、场景测试等等。这么一大堆名词，他们各自有什么含义呢？首先，抛弃枯燥的理论，我们可以结合软件系统架构来确认每种测试的内容及作用。</p>
+<a id="more"></a>
+<h3 id="软件系统架构"><a href="#软件系统架构" class="headerlink" title="软件系统架构"></a>软件系统架构</h3><p>传统的企业级应用架构如下图</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/software-architecture.png" alt="software-architecture"></p>
+<ul>
+<li>Resource层对外暴露我们的服务，体现在RESTful API中即为资源（所以我们的命名应该是Resource而不是Controller，也不是API）</li>
+<li>核心业务逻辑在Domain层，包括Service、Domain和Repository，在这一层调用依赖的外部服务，裁剪和协调数据，处理核心业务逻辑。 </li>
+<li>Persistence层处理数据的持久化</li>
+</ul>
+<h3 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h3><p>在上述的软件架构下，在哪些模块可以使用单元测试呢？单元测试在各个模块分别为我们提供什么价值呢？</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/unit-test.png" alt="unit-test"></p>
+<ul>
+<li><p>Domain</p>
+<p>Domain中有一系列涉及核心业务逻辑的业务实体，它们常常包含很多复杂的、基于状态的逻辑。通过在Domain中添加单元测试，我们可以去验证这部分逻辑的正确性。</p>
+</li>
+<li><p>Gateways</p>
+<p>通过Gateway选择合适的HTTP Client，正确调用外部服务，满足业务需要。因而在Gateway中，我们只需要验证其根据输入选择了正确的HTTP Client，而不需要HTTP Client的真正调用。发送Http请求是比较费时的，通过Mock HTTP Client，我们可以得到比集成测试更快的反馈。【代码示例】</p>
+</li>
+<li><p>Resource 和 Service</p>
+<p>Resource和Service在许多情况下，所做的工作都是协调、裁剪与验证数据。我们也可以通过Mock隔离依赖，进行单元测试，快速验证其工作的正确性。</p>
+</li>
+</ul>
+<h3 id="集成测试"><a href="#集成测试" class="headerlink" title="集成测试"></a>集成测试</h3><p>单元测试只验证本模块的逻辑正确性，但是无法验证模块之间的交互，也无法保证系统的行为。集成测试可以解决这个问题。</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/integration-test-boundary.png" alt="integration-test-boundary"></p>
+<ul>
+<li><p>Gateways、HTTP Client 和 External Service</p>
+<p>我们将 Gateways、HTTP Client 和 External Service 放入一个集成测试边界进行集成测试，可以验证错误的HTTP header，SSL握手和超时等问题。从而保证外部服务可用，并且被我们正常调用。</p>
+</li>
+<li><p>Data Mappers/ORM 和 External Datastore</p>
+<p>保证数据库 Schema 和 Data mapping 的正确性，验证事务和复杂 SQL 语句的正确性。</p>
+</li>
+</ul>
+<h3 id="组件测试"><a href="#组件测试" class="headerlink" title="组件测试"></a>组件测试</h3><p>集成测试可以保证模块的交互与行为，但仍然没有测试完整的业务。换句话说：单元测试和集成测试虽然都可以对内支撑团队的开发工作，但对于最终用户的价值有限。因此，我们需要组件测试。组件测试将我们的服务整体作为一个组件，隔离外部数据库和外部服务，测试本服务的完整业务场景。</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/component-test-boundary.png" alt="component-test-boundary"><br>这里存在一个问题，我们如何隔离外部依赖呢？</p>
+<ul>
+<li><p>外部数据库</p>
+<p>使用内存数据库实现（如H2），可以为我们的测试带来重大的性能提升。虽然真实数据库被排除到组件测试以外，但是我们在Data Mappers/ORM 和 External Datastore的集成测试中已经完成了这部分覆盖。</p>
+</li>
+<li><p>外部服务</p>
+<p>使用 Stub Service 实现（ 例如<a href="https://github.com/dreamhead/moco">moco</a>, <a href="https://github.com/azagniotov/stubby4j">stubby4j</a> 和 <a href="https://github.com/bbyars/mountebank">mountebank</a> ），和 Mock 外部数据库类似，Stub Service 也可以带来测试效率的提升。除此之外，Stub Service 对于我们最大的价值在于：对于外部服务的依赖比外部数据库的依赖更为复杂，涉及到网络是否可达、延迟和防火墙配置、外部服务变更等问题。在组件测试中，我们只是验证我们的服务是否满足业务需要，因此隔离掉外部服务的依赖是合理的。而且，对于真实外部服务的调用已经在 Gateways、HTTP Client 和 External Service 的模块集成测试中完成了覆盖。</p>
+</li>
+</ul>
+<h3 id="端到端测试"><a href="#端到端测试" class="headerlink" title="端到端测试"></a>端到端测试</h3><p>将系统中的各个模块（包含外部依赖服务）作为一个整体，选取合适的终端对系统整体进行测试。端到端测试针对最终用户，测试完整的 user case。这部分测试对最终用户最有价值，需要包含主要的用户场景（User Journey），但因为端到端测试的成本比较高，所以这部分测试需要尽可能少。</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/end-to-end-test.png" alt="end-to-end-test"></p>
+<ul>
+<li><p>通过GUI暴露的服务</p>
+<p>利用 <a href="http://docs.seleniumhq.org/projects/webdriver/" target="_blank" rel="external">Selenium WebDriver</a> 进行测试</p>
+</li>
+<li><p>无前端的服务</p>
+<p>通过 HTTP Client 调用 Public API 进行测试</p>
+</li>
+</ul>
+<hr>
+<h2 id="测试分层"><a href="#测试分层" class="headerlink" title="测试分层"></a>测试分层</h2><h3 id="测试金字塔"><a href="#测试金字塔" class="headerlink" title="测试金字塔"></a>测试金字塔</h3><p>如图所示，单元测试、集成测试、组件测试、端到端测试和探索性测试，从金字塔的底部到顶部的变化趋势为：集成度更高、反馈更为真实，但其测试的成本也更高，覆盖率较低；与之相反，从金字塔的顶部到底部的变化趋势为：运行速度更快，反馈周期更短，覆盖率也更高，但没法测试系统的连通性，而且因为测试中存在某些外部隔离，测试反馈真实性也会打些折扣。</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/test-pyramid.png" alt="test-pyramid"></p>
+<h3 id="确认测试层次的基本原则"><a href="#确认测试层次的基本原则" class="headerlink" title="确认测试层次的基本原则"></a>确认测试层次的基本原则</h3><p>对于我们的系统而言，关于测试，我们需要思考两个问题：系统的哪些地方需要测试，以及什么层次的测试最契合我们的测试需求？对于第一个问题：我们可以根据以下原则来综合度量。</p>
+<ul>
+<li>被测试点是否容易出错</li>
+<li>是否容易低成本进行测试</li>
+<li>引入 bug 后是否能够及时发现与定位</li>
+<li>被测试点对于系统的价值</li>
+</ul>
+<p>在确认系统哪些地方需要引入测试之后，我们可以问问自己：在这里引入测试的目的是什么？是帮助我们理清和确认业务，还是保证复杂逻辑的正确性，抑或是用于评断系统的性能？我们可以借助敏捷测试四象限图来帮助我们分析。</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com//agile-test/agile-test-quardrant.png" alt="agile-test-quardrant"></p>
+<p>如上图所示：根据我们定位的测试点和引入测试的目的，我们可以把不同的测试放入到象限图的不同象限。每个象限的测试复杂程度各不相同，测试方式可能也存在比较差异。结合项目的情况与开发进展，可以明确需要做什么测试，以及分别由团队的什么角色来做这些测试。项目的不同阶段可能需要不同象限的测试，我们可以根据项目的开发流程的发展来调节测试的内容，找到最佳方案。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/agile/" rel="tag">#agile</a>
+          
+            <a href="/tags/test/" rel="tag">#test</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/26/在Docker中搭建基于Http-Https的SVN服务器/" rel="next" title="在Docker中搭建基于Http/Https的SVN服务器">
+                <i class="fa fa-chevron-left"></i> 在Docker中搭建基于Http/Https的SVN服务器
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/12/Design RESTful API —— 从领域建模到API设计/" rel="prev" title="Design RESTfulAPI —— 从领域建模到 API 设计">
+                Design RESTfulAPI —— 从领域建模到 API 设计 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/09/22/软件测试/"
+           data-title="软件测试" data-url="http://github.com/zcfelix/zcfelix.github.io/2017/09/22/软件测试/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://ofnzfzy9m.bkt.clouddn.com/images/avatars/whale.jpg?imageView2/1/w/200/h/200"
+               alt="Felix Zhou" />
+          <p class="site-author-name" itemprop="name">Felix Zhou</p>
+          <p class="site-description motion-element" itemprop="description">岁月如冰河，热望如鲸歌</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zcfelix" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://douban.com/people/zcfelix" target="_blank" title="Douban">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Douban
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/faksaa" target="_blank" title="Zhihu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Zhihu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.linkedin.com/in/ying-zhou-7b9b68124" target="_blank" title="Linkedin">
+                  
+                    <i class="fa fa-fw fa-linkedin"></i>
+                  
+                  Linkedin
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是测试"><span class="nav-number">1.</span> <span class="nav-text">什么是测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#软件架构与测试分类"><span class="nav-number">2.</span> <span class="nav-text">软件架构与测试分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#软件系统架构"><span class="nav-number">2.1.</span> <span class="nav-text">软件系统架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#单元测试"><span class="nav-number">2.2.</span> <span class="nav-text">单元测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集成测试"><span class="nav-number">2.3.</span> <span class="nav-text">集成测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件测试"><span class="nav-number">2.4.</span> <span class="nav-text">组件测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#端到端测试"><span class="nav-number">2.5.</span> <span class="nav-text">端到端测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试分层"><span class="nav-number">3.</span> <span class="nav-text">测试分层</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#测试金字塔"><span class="nav-number">3.1.</span> <span class="nav-text">测试金字塔</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#确认测试层次的基本原则"><span class="nav-number">3.2.</span> <span class="nav-text">确认测试层次的基本原则</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Felix Zhou</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zcfelix"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
