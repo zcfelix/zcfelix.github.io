@@ -1,0 +1,831 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="git,ci," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="Check-in Dance流程
+(1) Run tests in local
+ 本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：$ mvn test">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git 基础及 Check-in Dance">
+<meta property="og:url" content="http://github.com/zcfelix/zcfelix.github.io/2017/10/19/git-and-check-in-dance/index.html">
+<meta property="og:site_name" content="Felix's Blog">
+<meta property="og:description" content="Check-in Dance流程
+(1) Run tests in local
+ 本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：$ mvn test">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/git-area.png">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/before-reverting.svg">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/before-resetting.svg">
+<meta property="og:image" content="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/scope-of-reset.svg">
+<meta property="og:updated_time" content="2017-10-19T11:33:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Git 基础及 Check-in Dance">
+<meta name="twitter:description" content="Check-in Dance流程
+(1) Run tests in local
+ 本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：$ mvn test">
+<meta name="twitter:image" content="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/git-area.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://github.com/zcfelix/zcfelix.github.io/2017/10/19/git-and-check-in-dance/"/>
+
+
+  <title> Git 基础及 Check-in Dance | Felix's Blog </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Felix's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Git 基础及 Check-in Dance
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-10-19T17:59:06+08:00" content="2017-10-19">
+              2017-10-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Tech/" itemprop="url" rel="index">
+                    <span itemprop="name">Tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/10/19/git-and-check-in-dance/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/10/19/git-and-check-in-dance/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Check-in-Dance"><a href="#Check-in-Dance" class="headerlink" title="Check-in Dance"></a>Check-in Dance</h2><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><ul>
+<li><p>(1) Run tests in local</p>
+<p> 本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+</ul>
+<a id="more"></a>
+<ul>
+<li><p>(2) Check CI status<br> 检查 CI 状态，确认现在可以拉取代码</p>
+</li>
+<li><p>(3) Pull<br> 开发新代码之前，从 CI 完全成功的那个最新版本检出代码：<code>$ git pull --rebase</code></p>
+</li>
+<li><p>(4) Run tests in local<br> 本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li><p>(5) Make changes<br> 按照 red -&gt; green -&gt; refactor 方式编写代码；</p>
+<ul>
+<li>red：根据 Task 拆分，添加一个新的测试 （由于目前没有实现代码，测试失败）</li>
+<li>green：添加最少的实现代码，使测试通过</li>
+<li>refactor：识别代码中的 bad smell，重构代码</li>
+</ul>
+</li>
+<li><p>(6) Run tests in local<br> 完成一个小特性以后，本地运行测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li><p>(7) Review Changes<br> 在 IntelliJ 下 <code>Alt + 9</code> review <code>Local Changes</code></p>
+</li>
+<li><p>(8) Commit to local<br> 本地提交，小步提交，写清楚 Story 编号有意义的提交信息；</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git add .</div><div class="line">$ git commit -m &quot;[US27149] Add entity validation in creation process&quot;</div></pre></td></tr></table></figure>
+<ul>
+<li><p>(9) Check CI status<br> 检查 CI 状态，确认现在可以拉取代码；</p>
+</li>
+<li><p>(10) Pull<br>从远端拉取最新代码：<code>$ git pull --rebase</code><br>如果有冲突，修复有冲突的文件，然后</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git add .</div><div class="line">$ git rebase --continue</div></pre></td></tr></table></figure>
+<ul>
+<li><p>(11) Run tests in local<br>  本地运行测试，保证测试通过，如果又失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li><p>(12) Push<br>  本地 commit 通过测试之后，尽早 push 到远端，以便团队其他人员在新代码库上工作：<code>$ git push</code></p>
+</li>
+<li><p>(13) Check CI status<br>  查看自己 push 之后，CI 状态正常</p>
+</li>
+</ul>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
+<li>(1) 在步骤10中，频繁与远端代码库合并，避免 big bang conflict。如果本地已经较长时间没有拉取代码库的代码，并且观察到其他成员已经进行了较多 commit，而本地有未完成工作不能 commit，如何同步远端代码库的代码呢？</li>
+</ul>
+<p>我们可以先暂存目前的工作，拉取远端的最新代码，然后取回目前的工作与远端代码进行合并。这样可以将合并前移，尽量避免 big bang conflict。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ git stash</div><div class="line">$ git pull --rebase</div><div class="line">$ git stash pop</div></pre></td></tr></table></figure>
+<ul>
+<li>(2) 本地测试通过之后，尽早 push，避免big bang conflict</li>
+</ul>
+<hr>
+<h2 id="Git-简介"><a href="#Git-简介" class="headerlink" title="Git 简介"></a>Git 简介</h2><h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>Git 有三种状态，你的文件可能处于其中之一：已提交（committed）、已修改（modified）和已暂存（staged）。 已提交表示数据已经安全的保存在本地数据库中。 已修改表示修改了文件，但还没保存到数据库中。 已暂存表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。</p>
+<p>由此引入 Git 项目的三个工作区域的概念：Git 仓库、工作目录以及暂存区域。</p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/git-area.png" alt="git-area"></p>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">$ git status                      # 查看文件处于什么状态</div><div class="line">$ git log                         # 查看提交历史</div><div class="line">$ git add &lt;filename&gt;              # 将需要提交的文件从 Working Directory 添加到 Staging Area</div><div class="line">$ git commit -m &lt;message&gt;         # 将 Staging Area 中的文件快照永久性移动到 Repository</div><div class="line">$ git commit --amend              # 修改上次提交</div><div class="line">$ git pull --rebase               # 拉取远端代码，将本地修改衍合到本地最新代码上</div><div class="line">$ git push                        # 将本地提交推送到远端仓库</div><div class="line">$ git merge &lt;branchname&gt;          # 合并分支</div><div class="line">$ git checkout -b &lt;branchname&gt;    # 新建并切换 Working Directory 到新分支</div><div class="line">$ git checkout -- &lt;filename&gt;      # 丢弃文件修改，还原文件状态到上次提交的状态</div><div class="line">$ git revert HEAD~&lt;number&gt;        # 找到倒数第&lt;number&gt;个提交，并创建一个新的提交来撤销之后的更改</div><div class="line">$ git reset HEAD^ &lt;filename&gt;      # 将当前的某个 file 从缓存区移出，不影响工作目录对其进行的修改</div><div class="line">$ git reset --hard HEAD~&lt;number&gt;  # 移除最后&lt;number&gt;个提交，并将缓存区和工作目录同步到指定的提交</div></pre></td></tr></table></figure>
+<h3 id="代码回滚"><a href="#代码回滚" class="headerlink" title="代码回滚"></a>代码回滚</h3><h4 id="Revert"><a href="#Revert" class="headerlink" title="Revert"></a>Revert</h4><p>Revert 撤销一个提交的同时会创建一个新的提交。这是一个安全的方法，因为它不会重写提交历史。比如，下面的命令会找出倒数第二个提交，然后创建一个新的提交来撤销这些更改，然后把这个提交加入项目中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git checkout hotfix</div><div class="line">$ git revert HEAD~2</div></pre></td></tr></table></figure></p>
+<p><img src="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/before-reverting.svg" alt="reverting"></p>
+<h4 id="Reset"><a href="#Reset" class="headerlink" title="Reset"></a>Reset</h4><p>在提交层面上，reset 将一个分支的末端指向另一个提交。这可以用来移除当前分支的一些提交。比如，下面这两条命令让 hotfix 分支向后回退了两个提交。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git checkout hotfix</div><div class="line">$ git reset HEAD~2</div></pre></td></tr></table></figure></p>
+<p>hotfix 分支末端的两个提交现在变成了悬挂提交。也就是说，下次 Git 执行垃圾回收的时候，这两个提交会被删除。换句话说，如果你想扔掉这两个提交，你可以这么做。reset 操作如下图所示：<br><img src="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/before-resetting.svg" alt="resetting"></p>
+<p>如果你的更改还没有共享给别人，<code>git reset</code> 是撤销这些更改的简单方法。当你开发一个功能的时候发现「糟糕，我做了什么？我应该重新来过！」时，<code>reset</code> 就像是 <code>go-to</code> 命令一样。</p>
+<p>除了在当前分支上操作，你还可以通过传入这些标记来修改你的缓存区或工作目录：</p>
+<p>–soft – 缓存区和工作目录都不会被改变<br>–mixed – 默认选项。缓存区和你指定的提交同步，但工作目录不受影响<br>–hard – 缓存区和工作目录都同步到你指定的提交<br>把这些标记想成定义 git reset 操作的作用域就容易理解多了。<br><img src="http://ofnzfzy9m.bkt.clouddn.com/check-in-dance/scope-of-reset.svg" alt="scope-of-reset"><br>当你传入 HEAD 以外的其他提交的时候要格外小心，因为 reset 操作会重写当前分支的历史。正如 rebase 黄金法则所说的，在公共分支上这样做可能会引起严重的后果。下表总结了 reset、checkout 和 revert 应用到文件层面和提交层面的常用场景。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用域</th>
+<th>常用情景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git reset</td>
+<td>提交层面</td>
+<td>在私有分支上舍弃一些没有提交的更改</td>
+</tr>
+<tr>
+<td>git reset</td>
+<td>文件层面</td>
+<td>将文件从缓存区中移除</td>
+</tr>
+<tr>
+<td>git checkout</td>
+<td>提交层面</td>
+<td>切换分支或查看旧版本</td>
+</tr>
+<tr>
+<td>git checkout</td>
+<td>文件层面</td>
+<td>舍弃工作目录中的更改</td>
+</tr>
+<tr>
+<td>git revert</td>
+<td>提交层面</td>
+<td>在公共分支上回滚更改</td>
+</tr>
+<tr>
+<td>git revert</td>
+<td>文件层面</td>
+<td>（然而并没有）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="CI-变红之后的操作指导"><a href="#CI-变红之后的操作指导" class="headerlink" title="CI 变红之后的操作指导"></a>CI 变红之后的操作指导</h2><h3 id="责任人"><a href="#责任人" class="headerlink" title="责任人"></a>责任人</h3><ul>
+<li><p>(1) 提交之后 Working Directory 或 Stage Area 是否存在未 commit 的修改</p>
+<ul>
+<li>如果存在未 commit 的修改</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git stash  # 保存目前的修改，工作区和暂存区内容回到问题提交点的状态 </div><div class="line">$ git status # 确认状态是否正确</div></pre></td></tr></table></figure>
+<ul>
+<li><p>(2) 运行测试</p>
+<ul>
+<li><p>测试未通过，说明 push 之前没有在本地运行测试，未按照 check-in dance 的步骤提交代码</p>
+<p><strong>可以自己打脸提醒一下，不要再犯</strong>，暂时放下其他工作，开始全力 Debug 吧</p>
+</li>
+<li><p>测试通过，说明很有可能是因为本地环境与 CI 环境不同，比如数据不一致等原因</p>
+<p>可以自己打脸清醒一下，暂时放下其他工作，开始全力 Debug 吧</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>(3) bug 修复流程</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ git checkout -b hot-fix   # 创建并切换到 hot-fix 分支，在该分支修复 bug</div></pre></td></tr></table></figure>
+<ul>
+<li>(4) 15分钟之内，是否完成了 bug 修复</li>
+</ul>
+<p>完成了 bug 修复，并在本地经过了测试验证</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ git add .                   # 将修改保存到暂存区，准备提交</div><div class="line">$ git commit -m &lt;message&gt;     # 将修改提交到 hot-fix 分支</div><div class="line">$ git checkout master         # 切换到 master 分支</div><div class="line">$ git rebase master hot-fix   # 将 bug 修改过程在 master 分支重演</div><div class="line">$ git pull --rebase           # 原则上 CI 红了其他人不能提交，这一步可以忽略</div><div class="line">$ git push                    # 将修改提交到远端</div></pre></td></tr></table></figure>
+<p>未完成 bug 修复</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">$ git stash                   # 保存在 hot-fix 分支未完成的修复工作</div><div class="line">$ git checkout master         # 切换到 master 分支</div><div class="line">$ git revert &lt;commit hash&gt;    # 创建一个 revert 提交撤销引入 bug 的修改</div><div class="line">$ git pull --rebase           # 原则上 CI 红了其他人不能提交，这一步可以忽略</div><div class="line">$ git push                    # 回退 CI 的代码，先修复 CI，保证其他人可以提交</div><div class="line">$ git checkout hot-fix        # 切换回 hot-fix 分支</div><div class="line">$ git stash pop               # 恢复目前已经进行的修复工作，继续修复</div><div class="line">$ git add .                   # 修复完成，将修改保存到暂存区，准备提交</div><div class="line">$ git commit -m &lt;message&gt;     # 将修改提交到 hot-fix 分支</div><div class="line">$ git checkout master         # 切换到 master 分支</div><div class="line">$ git rebase master hot-fix   # 将 bug 修改过程在 master 分支重演</div><div class="line">$ git pull --rebase           # 原则上 CI 红了其他人不能提交，这一步可以忽略</div><div class="line">$ git push                    # 将修改提交到远端</div></pre></td></tr></table></figure>
+<h3 id="其他成员"><a href="#其他成员" class="headerlink" title="其他成员"></a>其他成员</h3><ol>
+<li><p><strong>CI 变红之后暂停提交代码，直至 CI 变绿</strong></p>
+</li>
+<li><p>CI 变绿之后</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ git stash                        # 保存目前的工作，如果工作区和暂存区是干净的，忽略此步骤</div><div class="line">$ git pull --rebase                # 拉取最新的修复之后的代码</div><div class="line">$ git stash pop                    # 恢复当前工作区，继续工作</div></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li><a href="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9">代码回滚：Reset、Checkout、Revert-的选择</a></li>
+<li><a href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging" target="_blank" rel="external">Git Branch and Merging</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/git/" rel="tag">#git</a>
+          
+            <a href="/tags/ci/" rel="tag">#ci</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/18/git提交分支与流水线/" rel="next" title="Git分支模型与开发部署流水线">
+                <i class="fa fa-chevron-left"></i> Git分支模型与开发部署流水线
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/10/19/git-and-check-in-dance/"
+           data-title="Git 基础及 Check-in Dance" data-url="http://github.com/zcfelix/zcfelix.github.io/2017/10/19/git-and-check-in-dance/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://ofnzfzy9m.bkt.clouddn.com/images/avatars/whale.jpg?imageView2/1/w/200/h/200"
+               alt="Felix Zhou" />
+          <p class="site-author-name" itemprop="name">Felix Zhou</p>
+          <p class="site-description motion-element" itemprop="description">岁月如冰河，热望如鲸歌</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zcfelix" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://douban.com/people/zcfelix" target="_blank" title="Douban">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Douban
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/faksaa" target="_blank" title="Zhihu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Zhihu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.linkedin.com/in/ying-zhou-7b9b68124" target="_blank" title="Linkedin">
+                  
+                    <i class="fa fa-fw fa-linkedin"></i>
+                  
+                  Linkedin
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Check-in-Dance"><span class="nav-number">1.</span> <span class="nav-text">Check-in Dance</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#流程"><span class="nav-number">1.1.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注意事项"><span class="nav-number">1.2.</span> <span class="nav-text">注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git-简介"><span class="nav-number">2.</span> <span class="nav-text">Git 简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础知识"><span class="nav-number">2.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用命令"><span class="nav-number">2.2.</span> <span class="nav-text">常用命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码回滚"><span class="nav-number">2.3.</span> <span class="nav-text">代码回滚</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Revert"><span class="nav-number">2.3.1.</span> <span class="nav-text">Revert</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reset"><span class="nav-number">2.3.2.</span> <span class="nav-text">Reset</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CI-变红之后的操作指导"><span class="nav-number">3.</span> <span class="nav-text">CI 变红之后的操作指导</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#责任人"><span class="nav-number">3.1.</span> <span class="nav-text">责任人</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他成员"><span class="nav-number">3.2.</span> <span class="nav-text">其他成员</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Felix Zhou</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zcfelix"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
