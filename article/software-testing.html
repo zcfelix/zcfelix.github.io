@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>软件测试 - zcfelix</title>
+  </head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zcfelix</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">软件测试</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1689061180522"
+                  >2023-07-11 15:39</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1689061230355"
+                  >2023-07-11 15:40</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">测试</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h2 id="1-什么是测试">1. 什么是测试</h2>
+<p>根据Wiki的定义，<a title="https://en.wikipedia.org/wiki/Software_testing" href="https://en.wikipedia.org/wiki/Software_testing">软件测试</a>是指在规定的条件下对程序进行操作，以发现程序错误，衡量软件质量 ，并对其是否能满足设计要求进行评估的过程。那么测试在软件开发中扮演什么样的角色，为我们提供什么价值呢？如果在项目中引入测试，我们应该按照什么样的原则去安排测试呢？带着这些问题，我们先来看看常见的测试有哪些。</p>
+<h2 id="2-软件架构与测试分类">2. 软件架构与测试分类</h2>
+<p>我们常见的测试有单元测试、集成测试、组件测试、端到端测试、性能测试、安全测试、探索性测试、验收测试、Alpha/Beta 测试、场景测试等等。这么一大堆名词，他们各自有什么含义呢？首先，抛弃枯燥的理论，我们可以结合软件系统架构来确认每种测试的内容及作用。</p>
+
+<h3 id="21-软件系统架构">2.1 软件系统架构</h3>
+<p>传统的企业级应用架构如下图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-b12d365a37f144b2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="software-architecture.png" /></p>
+<ul>
+<li>Resource层对外暴露我们的服务，体现在RESTful API中即为资源（所以我们的命名应该是Resource而不是Controller，也不是API）</li>
+<li>核心业务逻辑在Domain层，包括Service、Domain和Repository，在这一层调用依赖的外部服务，裁剪和协调数据，处理核心业务逻辑。</li>
+<li>Persistence层处理数据的持久化</li>
+</ul>
+<h3 id="22-单元测试">2.2 单元测试</h3>
+<p>在上述的软件架构下，在哪些模块可以使用单元测试呢？单元测试在各个模块分别为我们提供什么价值呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-f48b403453236f2b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="unit-test.png" /></p>
+<ul>
+<li>
+<p>Domain</p>
+<p>Domain中有一系列涉及核心业务逻辑的业务实体，它们常常包含很多复杂的、基于状态的逻辑。通过在Domain中添加单元测试，我们可以去验证这部分逻辑的正确性。</p>
+</li>
+<li>
+<p>Gateways</p>
+<p>通过Gateway选择合适的HTTP Client，正确调用外部服务，满足业务需要。因而在Gateway中，我们只需要验证其根据输入选择了正确的HTTP Client，而不需要HTTP Client的真正调用。发送Http请求是比较费时的，通过Mock HTTP Client，我们可以得到比集成测试更快的反馈。【代码示例】</p>
+</li>
+<li>
+<p>Resource 和 Service</p>
+<p>Resource和Service在许多情况下，所做的工作都是协调、裁剪与验证数据。我们也可以通过Mock隔离依赖，进行单元测试，快速验证其工作的正确性。</p>
+</li>
+</ul>
+<h3 id="23-集成测试">2.3 集成测试</h3>
+<p>单元测试只验证本模块的逻辑正确性，但是无法验证模块之间的交互，也无法保证系统的行为。集成测试可以解决这个问题。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-d466521d8197ac74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="integration-test-boundary.png" /></p>
+<ul>
+<li>
+<p>Gateways、HTTP Client 和 External Service</p>
+<p>我们将 Gateways、HTTP Client 和 External Service 放入一个集成测试边界进行集成测试，可以验证错误的HTTP header，SSL握手和超时等问题。从而保证外部服务可用，并且被我们正常调用。</p>
+</li>
+<li>
+<p>Data Mappers/ORM 和 External Datastore</p>
+<p>保证数据库 Schema 和 Data mapping 的正确性，验证事务和复杂 SQL 语句的正确性。</p>
+</li>
+</ul>
+<h3 id="24-组件测试">2.4 组件测试</h3>
+<p>集成测试可以保证模块的交互与行为，但仍然没有测试完整的业务。换句话说：单元测试和集成测试虽然都可以对内支撑团队的开发工作，但对于最终用户的价值有限。因此，我们需要组件测试。组件测试将我们的服务整体作为一个组件，隔离外部数据库和外部服务，测试本服务的完整业务场景。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-b1897e67da8ada1a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="component-test-boundary.png" /></p>
+<p>这里存在一个问题，我们如何隔离外部依赖呢？</p>
+<ul>
+<li>
+<p>外部数据库</p>
+<p>使用内存数据库实现（如H2），可以为我们的测试带来重大的性能提升。虽然真实数据库被排除到组件测试以外，但是我们在Data Mappers/ORM 和 External Datastore的集成测试中已经完成了这部分覆盖。</p>
+</li>
+<li>
+<p>外部服务</p>
+<p>使用 Stub Service 实现（ 例如<a title="https://github.com/dreamhead/moco" href="https://github.com/dreamhead/moco">moco</a>, <a title="https://github.com/azagniotov/stubby4j" href="https://github.com/azagniotov/stubby4j">stubby4j</a> 和 <a title="https://github.com/bbyars/mountebank" href="https://github.com/bbyars/mountebank">mountebank</a> ），和 Mock 外部数据库类似，Stub Service 也可以带来测试效率的提升。除此之外，Stub Service 对于我们最大的价值在于：对于外部服务的依赖比外部数据库的依赖更为复杂，涉及到网络是否可达、延迟和防火墙配置、外部服务变更等问题。在组件测试中，我们只是验证我们的服务是否满足业务需要，因此隔离掉外部服务的依赖是合理的。而且，对于真实外部服务的调用已经在 Gateways、HTTP Client 和 External Service 的模块集成测试中完成了覆盖。</p>
+</li>
+</ul>
+<h3 id="25-端到端测试">2.5 端到端测试</h3>
+<p>将系统中的各个模块（包含外部依赖服务）作为一个整体，选取合适的终端对系统整体进行测试。端到端测试针对最终用户，测试完整的 user case。这部分测试对最终用户最有价值，需要包含主要的用户场景（User Journey），但因为端到端测试的成本比较高，所以这部分测试需要尽可能少。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-d1bdf9f2e86f8771.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="end-to-end-test.png" /></p>
+<ul>
+<li>
+<p>通过GUI暴露的服务</p>
+<p>利用 <a title="http://docs.seleniumhq.org/projects/webdriver/" href="http://docs.seleniumhq.org/projects/webdriver/">Selenium WebDriver</a> 进行测试</p>
+</li>
+<li>
+<p>无前端的服务</p>
+<p>通过 HTTP Client 调用 Public API 进行测试</p>
+</li>
+</ul>
+<hr />
+<h2 id="3-测试分层">3. 测试分层</h2>
+<h3 id="31-测试金字塔">3.1 测试金字塔</h3>
+<p>如图所示，单元测试、集成测试、组件测试、端到端测试和探索性测试，从金字塔的底部到顶部的变化趋势为：集成度更高、反馈更为真实，但其测试的成本也更高，覆盖率较低；与之相反，从金字塔的顶部到底部的变化趋势为：运行速度更快，反馈周期更短，覆盖率也更高，但没法测试系统的连通性，而且因为测试中存在某些外部隔离，测试反馈真实性也会打些折扣。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-44b7971e06ecd587.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="test-pyramid.png" /></p>
+<h3 id="32-确认测试层次的基本原则">3.2 确认测试层次的基本原则</h3>
+<p>对于我们的系统而言，关于测试，我们需要思考两个问题：系统的哪些地方需要测试，以及什么层次的测试最契合我们的测试需求？对于第一个问题：我们可以根据以下原则来综合度量。</p>
+<ul>
+<li>被测试点是否容易出错</li>
+<li>是否容易低成本进行测试</li>
+<li>引入 bug 后是否能够及时发现与定位</li>
+<li>被测试点对于系统的价值</li>
+</ul>
+<p>在确认系统哪些地方需要引入测试之后，我们可以问问自己：在这里引入测试的目的是什么？是帮助我们理清和确认业务，还是保证复杂逻辑的正确性，抑或是用于评断系统的性能？我们可以借助敏捷测试四象限图来帮助我们分析。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-70bffb07f3b263f3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="agile-test-quardrant.png" /></p>
+<p>如上图所示：根据我们定位的测试点和引入测试的目的，我们可以把不同的测试放入到象限图的不同象限。每个象限的测试复杂程度各不相同，测试方式可能也存在比较差异。结合项目的情况与开发进展，可以明确需要做什么测试，以及分别由团队的什么角色来做这些测试。项目的不同阶段可能需要不同象限的测试，我们可以根据项目的开发流程的发展来调节测试的内容，找到最佳方案。</p>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

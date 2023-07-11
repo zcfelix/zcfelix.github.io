@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>Git 分支模型与开发部署流水线 - zcfelix</title>
+  </head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zcfelix</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">Git 分支模型与开发部署流水线</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1689060612272"
+                  >2023-07-11 15:30</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1689061119008"
+                  >2023-07-11 15:38</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">Git</span>
+              
+              <span class="keyword">Branching Model</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h2 id="1-分支模型">1. 分支模型</h2>
+<blockquote>
+<p>We firmly believe that long-lived version-control branches harm valuable engineering practices such as continuous integration, and this belief underlies our dislike for Gitflow.<br />
+—— ThoughtWorks Technology Radar 2015 Nov</p>
+</blockquote>
+<p><a title="http://nvie.com/posts/a-successful-git-branching-model/" href="http://nvie.com/posts/a-successful-git-branching-model/">Gitflow</a> 是由 Vincent Driessen 在2010年提出的基于 Git 的软件开发工作流，但与持续集成（Continuous Integration，CI）的实践有不少冲突的地方，在团队开发中不推荐采用，具体分析可以参见 <a title="http://insights.thoughtworkers.org/gitflow-consider-harmful/" href="http://insights.thoughtworkers.org/gitflow-consider-harmful/">Gitflow有害论</a> 。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-b251d4d5aaa37253.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Git Flow" /></p>
+<p>我们采用单主干开发的 Git 分支模型（<a title="https://paulhammant.com/2013/04/05/what-is-trunk-based-development/" href="https://paulhammant.com/2013/04/05/what-is-trunk-based-development/">Trunk Based Development</a>），所有的开发工作均在 master 分支上进行，同时利用 CI 流水线进行持续集成，保证 master 中的代码随时都可以发布到生产。除了利用 master 进行开发，我们利用 release 分支进行发布的跟踪。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-61bcacfb687ce855.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Trunk Based Development" /></p>
+<h2 id="2-持续发布流水线">2. 持续发布流水线</h2>
+<p>除了持续集成（CI），项目还涉及自动化测试与持续部署（Continuous Deployment，CD） 因此，我们会有开发环境与测试环境，而测试环境又可以分为 SIT 测试、UAT 测试与压力测试等等。那么代码应该在什么时候发布，发布什么样的版本，这些版本又如何追踪，发现 bug 之后如何处理呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-17e1e91db1cf1c59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Trunk Based Development with Release" /></p>
+<p>我们的流水线模型如上图所示，采用单主干开发策略。</p>
+<ol>
+<li>
+<p>所有的开发人员都在 master 分支提交代码，每次提交都触发 CI 构建，并在 CI 环境执行自动化测试，测试通过之后可以由测试人员发布到 SIT 环境并进行测试。</p>
+</li>
+<li>
+<p>发布人员根据项目进度，选取合适并通过 SIT 测试的 commit 节点，打上 tag 作为 SNAPSHOT 版本，并合并到 release 分支，在release分支中采用 RC (Release Candidate) 标记版本。</p>
+</li>
+<li>
+<p>将 RC 版本发布到 UAT 环境进行测试，如果测试通过则发布到生产环境并将该版本标记为 release 版本，如果测试发现 bug：</p>
+<ul>
+<li>
+<p>将该 RC 版本标记为不可靠。</p>
+</li>
+<li>
+<p>回滚到上一个可靠版本。</p>
+</li>
+<li>
+<p>在 master 分支进行修复，并 cherry pick 到 release 分支，并标记新的 RC 版本号。</p>
+</li>
+<li>
+<p>如果 master 分支有新的 commit 提交而不能重现 bug，则从原始 commit 节点拉取 hot-fix 分支，bug 修复完成后，cherry pick 到 release 分支，标记新的 RC 版本号，并将 hot-fix 上的修改 merge 到 master。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>在 release 分支选择 RC 标记版本，主要理由如下：</strong></p>
+<ol>
+<li>假如在 release 分支采用 SNAPSHOT 版本并部署到 UAT 环境，由于 SNAPSHOT 可以不断被覆盖，我们无法回滚到前几次 hot fix 产生的 SNAPSHOT 版本。</li>
+<li>加入使用 release 版本：由于每次 hot fix 产生一个新的 release 版本，但这个版本并没有通过 UAT 测试验证，如果验证失败，就属于不可靠版本，与 release 版本的原始语义相违背。</li>
+<li>选用 RC 版本，每次 hot fix 都产生一个新的 RC 版本，部署到 UAT 发现问题之后，可以快速回滚到上个 RC 版本或者 release 版本；如果验证该 RC 版本不可靠，可以立即对其做不可靠标记。我们只对可靠的 RC 版本标记为 release 并部署到生产环境。</li>
+</ol>
+<p><strong>在 master 修复 bug 之后，选择 cherry-pick 而非 merge 的理由如下：</strong></p>
+<p>对于团队而言，发布人员在合并 master 到 release 之后，开发人员可以继续开发新的feature，这个时候 release 和 master 是有区别的。bug 修复完成之后，直接 merge 到 release 分支有可能在发布版本引入还没有测试的新的 feature，甚至是还没有完成的 feature，这是我们不想看到的。因此，我们只需要 cherry pick 修复 bug 的有关 commit 到 release 分支。</p>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

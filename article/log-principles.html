@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>日志规范 - zcfelix</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zcfelix</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">日志规范</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1689060682110"
+                  >2023-07-11 15:31</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1689060774024"
+                  >2023-07-11 15:32</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">Log</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><p>日志用来记录用户操作、系统运行状态等，是一个系统的重要组成部分。然而，由于日志通常不属于系统的核心功能，所以常常不被团队成员所重视。对于一些简单的小程序，可能并不需要在如何记录日志的问题上花费太多精力。但是对于作为基础平台为很多产品提供服务的后端程序，就必须要考虑如何依靠良好的日志来保证系统可靠的运行了。</p>
+<h2 id="1-记录日志的目的">1. 记录日志的目的</h2>
+<ul>
+<li>了解线上系统运行状态</li>
+<li><strong>快速准确定位线上问题</strong></li>
+<li><strong>记录业务相关操作</strong></li>
+<li>发现系统瓶颈</li>
+<li>预警系统潜在风险</li>
+</ul>
+<h2 id="2-需要记录哪些信息">2. 需要记录哪些信息</h2>
+<p>理想的日志需要记录不多不少的信息，既不要让定位问题时缺乏足够的信息支撑，又不要输出太多的无用信息，导致真正有用的消息被淹没。为了实现目前最为重要的两个目的：快速准确定位线上问题和记录业务相关操作。我们规定记录要求如下。</p>
+<h3 id="21-记录要求">2.1 记录要求</h3>
+<ol>
+<li>针对快速准确定位线上问题
+<ul>
+<li>确认服务启动时配置参数是否正确加载</li>
+<li>请求出错时，可以直接通过日志定位问题</li>
+<li>确认服务后台任务是否按照期望执行</li>
+<li>确认服务的异常处理逻辑（如重试）是否正确执行</li>
+</ul>
+</li>
+<li>针对记录业务相关操作
+<ul>
+<li>确认Flow执行过程与状态</li>
+</ul>
+</li>
+</ol>
+<p>针对第1个要求，分析需要记录的时间点与信息如下：</p>
+<ul>
+<li>服务启动与配置参数的加载</li>
+<li>请求的入口与出口</li>
+<li>外部服务的调用与返回</li>
+<li>程序异常：如数据库无法连接等</li>
+<li>后台操作：如Flow运行的过程与状态</li>
+<li>资源消耗操作：如打开文件等</li>
+<li>重要的状态变化</li>
+<li>长期执行的任务的执行进度</li>
+</ul>
+<p>针对第2个要求，分析需要记录的信息与时间点如下：</p>
+<ul>
+<li>Flow开始执行，配置信息</li>
+<li>工具开始执行，配置信息</li>
+<li>工具执行结束，结果状态或失败原因</li>
+<li>Flow执行结束，结果状态或失败原因</li>
+</ul>
+<p>这些消息，我们应该分类存储，方便我们查看和分析问题。这里我们简单介绍一下日志分类与级别。</p>
+<h2 id="3-日志分类与级别">3. 日志分类与级别</h2>
+<h3 id="31-日志分类">3.1 日志分类</h3>
+<p>从功能上来说，日志可分为：诊断日志、统计日志、审计日志。诊断日志通常用来获取错误发生的具体环境，跟踪分析错误出现的原因以便于解决错误；统计日志是用来进行访问统计的，比如用户IP、上传与下载的数据量、请求耗时等。</p>
+<h3 id="32-日志级别">3.2 日志级别</h3>
+<p><strong>FATAL</strong>：表示需要立即被处理的系统级错误，该错误出现时，表示服务出现了某种程度的不可用，系统管理员需要立即介入。这属于最严重的日志级别。<strong>一个进程的生命周期中应该只记录一次FATAL级别的日志，即该进程遇到无法恢复的错误而退出时</strong>。</p>
+<p><strong>ERROR</strong>：该级别的错误也需要马上被处理，但是紧急程度要低于FATAL级别。当ERROR错误发生时，已经影响了用户的正常访问。<strong>特别需要注意的是，ERROR和FATAL都属于服务器自己的异常，是需要马上得到人工介入并处理的。而对于用户自己操作不当，如请求参数错误等等，是绝对不应该记为ERROR日志的</strong>。</p>
+<p><strong>WARN</strong>：该日志表示系统可能出现问题，也可能没有，这种情况如网络的波动等。对于那些目前还不是错误，然而不及时处理也会变为错误的情况，也可以记为WARN日志，例如一个存储系统的磁盘使用量超过阀值，或者系统中某个用户的存储配额快用完等等。</p>
+<p><strong>INFO</strong>：该种日志记录系统的正常运行状态，例如某个子系统的初始化，某个请求的成功执行等等。通过查看INFO级别的日志，可以很快地对系统中出现的 WARN,ERROR,FATAL错误进行定位。</p>
+<p><strong>DEBUG</strong> or <strong>TRACE</strong>：对系统每一步的运行状态进行精确的记录。通过该种日志，可以查看某一个操作每一步的执行过程，可以准确定位是何种操作，何种参数，何种顺序导致了某种错误的发生。可以保证在不重现错误的情况下，也可以通过DEBUG（或TRACE）级别的日志对问题进行诊断。</p>
+<h2 id="4-日志切分">4. 日志切分</h2>
+<p>针对我们的需求，我们目前需要诊断日志和业务日志。而将诊断日志和业务日志分开存放，便于开发人员查看，也便于我们通过日志系统进行及时监控。另外，我们将错误日志单独存放一份，便于问题定位。</p>
+<ol>
+<li>首先，我们将日志分为两类：
+<ul>
+<li>诊断日志：diagnostic</li>
+<li>业务日志：business</li>
+<li>错误日志：error</li>
+</ul>
+</li>
+<li>日志文件不宜过大，过大的日志文件给问题定位和日志监控带来不便
+<ul>
+<li>按天分割</li>
+<li>按小时分割</li>
+<li>按日志大小分割（如每10MB分割一次）</li>
+<li>按天和日志大小结合进行分割</li>
+</ul>
+</li>
+<li>日志存储位置
+<ul>
+<li>业务日志存储到数据库(and|or)文件</li>
+<li>其他日志存储到文件</li>
+</ul>
+</li>
+<li>日志命名（appName_logType_logName.log）
+<ul>
+<li>按天分割：ams_flow_service_diag_20180821.log</li>
+<li>按小时分割：ams_flow_service_busi_20180821_0800.log</li>
+<li>按日志大小分割：ams_flow_service_error_1.log</li>
+</ul>
+</li>
+</ol>
+<p>关于日志分割的配置，可以通过日志组件的<em>日志处理策略</em><code>appender</code>中的<em>滚动策略</em><code>rollingPolicy</code>进行配置。例如：</p>
+<div><pre class="hljs"><code>    <span class="hljs-tag">&lt;<span class="hljs-name">appender</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"FILE"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.core.rolling.RollingFileAppender"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">rollingPolicy</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.core.rolling.TimeBasedRollingPolicy"</span>&gt;</span>
+            <span class="hljs-comment">&lt;!--日志文件输出的文件名--&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">FileNamePattern</span>&gt;</span>${LOG_HOME}/${PROJECT_NAME}.%d{yyyy-MM-dd}.log<span class="hljs-tag">&lt;/<span class="hljs-name">FileNamePattern</span>&gt;</span>
+            <span class="hljs-comment">&lt;!--日志文件保留天数--&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">MaxHistory</span>&gt;</span>30<span class="hljs-tag">&lt;/<span class="hljs-name">MaxHistory</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">rollingPolicy</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">encoder</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.classic.encoder.PatternLayoutEncoder"</span>&gt;</span>
+            <span class="hljs-comment">&lt;!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符--&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">pattern</span>&gt;</span>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n<span class="hljs-tag">&lt;/<span class="hljs-name">pattern</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">encoder</span>&gt;</span>
+        <span class="hljs-comment">&lt;!--日志文件最大的大小--&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">triggeringPolicy</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">MaxFileSize</span>&gt;</span>10MB<span class="hljs-tag">&lt;/<span class="hljs-name">MaxFileSize</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">triggeringPolicy</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">appender</span>&gt;</span></code></pre></div>
+<h2 id="5-日志格式">5. 日志格式</h2>
+<p>日志格式需要统一，不能任由个人喜好。举个例子，对于flow执行异常，有以下几种方式打印输出：</p>
+<div><pre class="hljs"><code><span class="hljs-comment">// 第一种</span>
+logger.error(<span class="hljs-string">"Flow executing exception for request "</span> + getRequestId() + <span class="hljs-string">" value: "</span> + value, e);
+
+<span class="hljs-comment">// 第二种</span>
+logger.error(<span class="hljs-string">"RequestID: "</span> + getRequestId() + <span class="hljs-string">", Error Message: Flow executing exception: "</span> + e);
+
+<span class="hljs-comment">// 第三种</span>
+logger.error(errorMessage(getRequestId(), getErrorMessage(), e));</code></pre></div>
+<p>那么，我们选择第三种方式可以通过函数接口规范日志格式，以便所有开发人员都可以通过该接口实现统一的日志。</p>
+<h2 id="6-常见问题">6. 常见问题</h2>
+<ol>
+<li>
+<p>Spring中Logger的获取</p>
+<ul>
+<li>常见方式</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Logger</span> <span class="hljs-variable">LOGGER</span> <span class="hljs-operator">=</span> LoggerFactory.getLogger(Flow.class);</code></pre></div>
+<ul>
+<li>自定义注解和<code>Injector</code>并实现<code>BeanPostProcessor</code>,参考<a title="https://dzone.com/articles/inject-slf4j-logger-annotation" href="https://dzone.com/articles/inject-slf4j-logger-annotation">这里</a></li>
+<li>使用<code>Lombok</code>,参考<a title="https://projectlombok.org/features/log" href="https://projectlombok.org/features/log">这里</a></li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-meta">@Slf4j</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LogExample</span> {
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String... args)</span> {
+    log.error(<span class="hljs-string">"Something else is wrong here"</span>);
+  }
+}</code></pre></div>
+</li>
+<li>
+<p>Spring中Logger的配置，能否默认提供一些信息，比如用户信息，请求IP等</p>
+</li>
+<li>
+<p>生成Request ID的原则</p>
+<ul>
+<li>IP + TIME + UID</li>
+<li>简单随机数</li>
+<li>MDC（服务器信息+用户请求信息）</li>
+</ul>
+</li>
+<li>
+<p>实时日志等级调整工具</p>
+</li>
+<li>
+<p>splunk</p>
+</li>
+</ol>
+<h2 id="7-注意事项">7. 注意事项</h2>
+<ol>
+<li>
+<p>应用中不可直接使用日志系统（Log4j、Logback）中的API，而应该依赖使用日志框架Slf4j中的API，使用门面模式的日志框架，有利于维护和各个类的日志处理方式统一。</p>
+<blockquote>
+<p>slf4j是日志门面框架，其仅提供日志记录的API，而不实现日志记录的功能，slf4j需要通过适配库适配到log4j或logback等日志系统来实现日志的记录。使用slf4j api能够提升代码和应用的可移植性，在使用不同日志系统的应用之间能够做到无缝的适配。同时，使用slf4j api的应用，在切换日志系统时（比如从logback切换到log4j2，不需要代码改造）</p>
+</blockquote>
+</li>
+<li>
+<p>日志文件推荐至少保存15天，某些异常可能具备以“周”为频率发生的特点</p>
+</li>
+<li>
+<p>对TRACE/DEBUG/INFO级别的日志输出，必须使用条件输出形式或者使用占位符的方式。</p>
+<div><pre class="hljs"><code>logger.debug(<span class="hljs-string">"Flow executing with flow config id: "</span> + flowConfig.getId() + <span class="hljs-string">" config: "</span> + flowConfig);</code></pre></div>
+<p>对于上述语句，如果我们的日志级别设置为WARN，那么上述日志不会打印，但是会执行字符串的拼接操作，并且调用<code>flowConfig</code>的<code>toString()</code>方法，浪费了系统资源，执行了上述操作，然而日志最终并不会打印。</p>
+<div><pre class="hljs"><code><span class="hljs-comment">// 使用条件语句</span>
+<span class="hljs-keyword">if</span> (logger.idDebugEnabled()) {
+    logger.debug(<span class="hljs-string">"Flow executing with flow config id: "</span> + flowConfig.getId() + <span class="hljs-string">" config: "</span> + flowConfig);
+}
+
+<span class="hljs-comment">// 使用占位符</span>
+<span class="hljs-comment">// log4j2和logback支持占位符，但log4j不支持</span>
+logger.debug(<span class="hljs-string">"Flow executing with id: {} config: {}"</span>, flowConfig.getId(), flowConfig);</code></pre></div>
+</li>
+<li>
+<p>避免重复打印日志</p>
+<p>例如在log4j中需要设置<code>additivity=false</code>,避免将logger生成的日志输出到root logger的同时还输出到该logger指定的独立的appender。</p>
+</li>
+</ol>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

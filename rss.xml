@@ -1,0 +1,1311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title></title>
+        <link>undefined</link>
+        <description>undefined</description>
+        <lastBuildDate>Tue, 11 Jul 2023 07:55:46 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>Joplin Pages Publisher</generator>
+        <item>
+            <title><![CDATA[软件测试]]></title>
+            <guid>7e9e7fb8b36247ccbc9ba3977f4a7619</guid>
+            <pubDate>Tue, 11 Jul 2023 07:39:40 GMT</pubDate>
+            <content:encoded><![CDATA[<h2 id="1-什么是测试">1. 什么是测试</h2>
+<p>根据Wiki的定义，<a title="https://en.wikipedia.org/wiki/Software_testing" href="https://en.wikipedia.org/wiki/Software_testing">软件测试</a>是指在规定的条件下对程序进行操作，以发现程序错误，衡量软件质量 ，并对其是否能满足设计要求进行评估的过程。那么测试在软件开发中扮演什么样的角色，为我们提供什么价值呢？如果在项目中引入测试，我们应该按照什么样的原则去安排测试呢？带着这些问题，我们先来看看常见的测试有哪些。</p>
+<h2 id="2-软件架构与测试分类">2. 软件架构与测试分类</h2>
+<p>我们常见的测试有单元测试、集成测试、组件测试、端到端测试、性能测试、安全测试、探索性测试、验收测试、Alpha/Beta 测试、场景测试等等。这么一大堆名词，他们各自有什么含义呢？首先，抛弃枯燥的理论，我们可以结合软件系统架构来确认每种测试的内容及作用。</p>
+
+<h3 id="21-软件系统架构">2.1 软件系统架构</h3>
+<p>传统的企业级应用架构如下图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-b12d365a37f144b2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="software-architecture.png" /></p>
+<ul>
+<li>Resource层对外暴露我们的服务，体现在RESTful API中即为资源（所以我们的命名应该是Resource而不是Controller，也不是API）</li>
+<li>核心业务逻辑在Domain层，包括Service、Domain和Repository，在这一层调用依赖的外部服务，裁剪和协调数据，处理核心业务逻辑。</li>
+<li>Persistence层处理数据的持久化</li>
+</ul>
+<h3 id="22-单元测试">2.2 单元测试</h3>
+<p>在上述的软件架构下，在哪些模块可以使用单元测试呢？单元测试在各个模块分别为我们提供什么价值呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-f48b403453236f2b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="unit-test.png" /></p>
+<ul>
+<li>
+<p>Domain</p>
+<p>Domain中有一系列涉及核心业务逻辑的业务实体，它们常常包含很多复杂的、基于状态的逻辑。通过在Domain中添加单元测试，我们可以去验证这部分逻辑的正确性。</p>
+</li>
+<li>
+<p>Gateways</p>
+<p>通过Gateway选择合适的HTTP Client，正确调用外部服务，满足业务需要。因而在Gateway中，我们只需要验证其根据输入选择了正确的HTTP Client，而不需要HTTP Client的真正调用。发送Http请求是比较费时的，通过Mock HTTP Client，我们可以得到比集成测试更快的反馈。【代码示例】</p>
+</li>
+<li>
+<p>Resource 和 Service</p>
+<p>Resource和Service在许多情况下，所做的工作都是协调、裁剪与验证数据。我们也可以通过Mock隔离依赖，进行单元测试，快速验证其工作的正确性。</p>
+</li>
+</ul>
+<h3 id="23-集成测试">2.3 集成测试</h3>
+<p>单元测试只验证本模块的逻辑正确性，但是无法验证模块之间的交互，也无法保证系统的行为。集成测试可以解决这个问题。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-d466521d8197ac74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="integration-test-boundary.png" /></p>
+<ul>
+<li>
+<p>Gateways、HTTP Client 和 External Service</p>
+<p>我们将 Gateways、HTTP Client 和 External Service 放入一个集成测试边界进行集成测试，可以验证错误的HTTP header，SSL握手和超时等问题。从而保证外部服务可用，并且被我们正常调用。</p>
+</li>
+<li>
+<p>Data Mappers/ORM 和 External Datastore</p>
+<p>保证数据库 Schema 和 Data mapping 的正确性，验证事务和复杂 SQL 语句的正确性。</p>
+</li>
+</ul>
+<h3 id="24-组件测试">2.4 组件测试</h3>
+<p>集成测试可以保证模块的交互与行为，但仍然没有测试完整的业务。换句话说：单元测试和集成测试虽然都可以对内支撑团队的开发工作，但对于最终用户的价值有限。因此，我们需要组件测试。组件测试将我们的服务整体作为一个组件，隔离外部数据库和外部服务，测试本服务的完整业务场景。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-b1897e67da8ada1a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="component-test-boundary.png" /></p>
+<p>这里存在一个问题，我们如何隔离外部依赖呢？</p>
+<ul>
+<li>
+<p>外部数据库</p>
+<p>使用内存数据库实现（如H2），可以为我们的测试带来重大的性能提升。虽然真实数据库被排除到组件测试以外，但是我们在Data Mappers/ORM 和 External Datastore的集成测试中已经完成了这部分覆盖。</p>
+</li>
+<li>
+<p>外部服务</p>
+<p>使用 Stub Service 实现（ 例如<a title="https://github.com/dreamhead/moco" href="https://github.com/dreamhead/moco">moco</a>, <a title="https://github.com/azagniotov/stubby4j" href="https://github.com/azagniotov/stubby4j">stubby4j</a> 和 <a title="https://github.com/bbyars/mountebank" href="https://github.com/bbyars/mountebank">mountebank</a> ），和 Mock 外部数据库类似，Stub Service 也可以带来测试效率的提升。除此之外，Stub Service 对于我们最大的价值在于：对于外部服务的依赖比外部数据库的依赖更为复杂，涉及到网络是否可达、延迟和防火墙配置、外部服务变更等问题。在组件测试中，我们只是验证我们的服务是否满足业务需要，因此隔离掉外部服务的依赖是合理的。而且，对于真实外部服务的调用已经在 Gateways、HTTP Client 和 External Service 的模块集成测试中完成了覆盖。</p>
+</li>
+</ul>
+<h3 id="25-端到端测试">2.5 端到端测试</h3>
+<p>将系统中的各个模块（包含外部依赖服务）作为一个整体，选取合适的终端对系统整体进行测试。端到端测试针对最终用户，测试完整的 user case。这部分测试对最终用户最有价值，需要包含主要的用户场景（User Journey），但因为端到端测试的成本比较高，所以这部分测试需要尽可能少。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-d1bdf9f2e86f8771.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="end-to-end-test.png" /></p>
+<ul>
+<li>
+<p>通过GUI暴露的服务</p>
+<p>利用 <a title="http://docs.seleniumhq.org/projects/webdriver/" href="http://docs.seleniumhq.org/projects/webdriver/">Selenium WebDriver</a> 进行测试</p>
+</li>
+<li>
+<p>无前端的服务</p>
+<p>通过 HTTP Client 调用 Public API 进行测试</p>
+</li>
+</ul>
+<hr />
+<h2 id="3-测试分层">3. 测试分层</h2>
+<h3 id="31-测试金字塔">3.1 测试金字塔</h3>
+<p>如图所示，单元测试、集成测试、组件测试、端到端测试和探索性测试，从金字塔的底部到顶部的变化趋势为：集成度更高、反馈更为真实，但其测试的成本也更高，覆盖率较低；与之相反，从金字塔的顶部到底部的变化趋势为：运行速度更快，反馈周期更短，覆盖率也更高，但没法测试系统的连通性，而且因为测试中存在某些外部隔离，测试反馈真实性也会打些折扣。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-44b7971e06ecd587.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="test-pyramid.png" /></p>
+<h3 id="32-确认测试层次的基本原则">3.2 确认测试层次的基本原则</h3>
+<p>对于我们的系统而言，关于测试，我们需要思考两个问题：系统的哪些地方需要测试，以及什么层次的测试最契合我们的测试需求？对于第一个问题：我们可以根据以下原则来综合度量。</p>
+<ul>
+<li>被测试点是否容易出错</li>
+<li>是否容易低成本进行测试</li>
+<li>引入 bug 后是否能够及时发现与定位</li>
+<li>被测试点对于系统的价值</li>
+</ul>
+<p>在确认系统哪些地方需要引入测试之后，我们可以问问自己：在这里引入测试的目的是什么？是帮助我们理清和确认业务，还是保证复杂逻辑的正确性，抑或是用于评断系统的性能？我们可以借助敏捷测试四象限图来帮助我们分析。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-70bffb07f3b263f3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="agile-test-quardrant.png" /></p>
+<p>如上图所示：根据我们定位的测试点和引入测试的目的，我们可以把不同的测试放入到象限图的不同象限。每个象限的测试复杂程度各不相同，测试方式可能也存在比较差异。结合项目的情况与开发进展，可以明确需要做什么测试，以及分别由团队的什么角色来做这些测试。项目的不同阶段可能需要不同象限的测试，我们可以根据项目的开发流程的发展来调节测试的内容，找到最佳方案。</p>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Design RESTful API —— 从领域建模到 API 设计]]></title>
+            <guid>f5fbdc370a514c32b08132782a81bdaf</guid>
+            <pubDate>Tue, 11 Jul 2023 07:34:23 GMT</pubDate>
+            <content:encoded><![CDATA[<h2 id="1-rest-简介">1. REST 简介</h2>
+<p>RESTful，是目前非常流行的一种互联网软件架构,由于其结构清晰、易于理解、便于扩展，正得到越来越多开发者的青睐。</p>
+<h3 id="11-什么是rest">1.1 什么是REST</h3>
+<p>REST（REpresentational State Transfer），首次出现是在2000年Roy Thomas Fielding的博士论文中，它值得是一组架构约束条件和原则。满足这些约束条件和原则的应用程序和设计就是RSETful的。为了理解什么是REST，我们首先需要理解下面几个概念。</p>
+
+<ul>
+<li>资源（Resource）<br />
+REST是“表现层状态转化”，其中暗含的主语便是资源，即资源的表现层状态转化。那么在REST的定义中，什么是资源呢？其实很好理解，我们平时上网所看到的一篇文章、一首歌曲、一个视频等，都可以算作资源。这些资源都可以通过URI来定位，即一个URI表示一个资源。</li>
+<li>表现层（REpresentation）<br />
+一个资源，也就是一个信息实体，它可以有多重不同的表现形式。例如：文本可以用txt格式表现，也可以用json或xml的格式表现，这就是表现层的意思。<br />
+通过URI可以确定一个资源，但是如何确定资源的表现形式呢？应该通过HTTP请求头的Accept和Content-Type字段指定。因此，严格来说，如果我们采取了RESTful架构，那么URI中是不应该有.jsp或者.html的后缀名的。因为URI只是用于定位资源，而不负责资源的表现形式。</li>
+<li>状态转化（State Transfer）<br />
+访问一个网站，就代表了客户端和服务器的一个互动过程。在这个过程中，肯定涉及到数据和状态的变化。而HTTP协议是无状态的，那么这些状态肯定保存在服务器端，所以如果客户端想要通知服务器端改变数据和状态的变化，肯定要通过某种方式来通知它。<br />
+客户端能通知服务器端的手段，只能是HTTP协议。具体来说，就是HTTP协议里面表示操作方式的动词，如：GET、POST、PUT、DELETE。它们分别对应四种基本操作：GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源。</li>
+</ul>
+<p>综合上面的解释，我们可以对RESTful架构做一个简单总结：</p>
+<ol>
+<li>每一个URI代表一种资源</li>
+<li>客户端和服务器之间，资源以某种形式进行传递，即传递资源的表现层</li>
+<li>客户端通过不同的HTTP动词（POST、PUT/PATCH、GET、DELETE、HEAD、OPTIONS）对资源进行操作，从而达到“表现层状态转化”的目的。</li>
+</ol>
+<h3 id="12-rest成熟度模型">1.2 REST成熟度模型</h3>
+<p>在Roy Thomas Fielding的论文中，对REST架构风格做了以下几点约束。</p>
+<ul>
+<li>Client-Server 客服端-服务器模式</li>
+<li>Stateless 无状态</li>
+<li>Cacheable 可缓存</li>
+<li>Layered System 分层系统</li>
+<li>Code on Demand 按需扩展</li>
+<li>Uniform interface 统一接口</li>
+</ul>
+<p>严格来说，符合所有这些约束的服务才能被称为 RESTful，但是在实际开发中，这需要付出较为高昂的成本，可能我们常见的服务都不是完全 RESTful 的，那么如何去判断一个服务有多么 RESTful 呢？Richardson 提出的 REST 成熟度模型可以帮助我们分析。模型对于REST服务的成熟划分了如下四个等级。</p>
+<ul>
+<li>
+<p>第0级<br />
+只使用一个 URI 作为服务端口，使用 HTTP 协议传输数据。SOAP 和大多数 WS-* 服务都是属于这个级别的，XML-RPC 和 POX 也是。这种做法相当于把 HTTP 这个应用层协议降级为传输层协议，HTTP 头用来保证传输，而所有的业务逻辑都包含于有效载荷中。</p>
+</li>
+<li>
+<p>第1级<br />
+使用多个 URI，不同的 URI 代表不同的调用入口，但只使用同一个 HTTP 方法传输数据。目前与第0级的区别在于：第0级相当于传入参数的远程函数调用，而目前需要首先获取相应资源再调用相应方法，可以类比于面向对象中首先获取对象标识符然后调用相应方法。</p>
+</li>
+<li>
+<p>第2级</p>
+<p>使用多个 URI，不同的 URI 代表不同的资源，同时使用多个 HTTP 方法操作这些资源，例如使用POST/GET/PUT/DELETE 分别进行 CRUD 操作，这时候 HTTP 头和有效载荷都包含业务逻辑，例如 HTTP 动词对应相应操作，HTTP 状态码对应操作结果的状态。目前与前两级服务的区别在于：相比于只使用 POST 的第0级和第1级服务，更为合理地使用了所有 HTTP 动词。</p>
+</li>
+<li>
+<p>第3级</p>
+<p>最后这个级别引入了HATEOAS（Hypertext As The Engine Of Application State），超媒体控制（Hypermedia Control）的关键在于它告诉我们下一步能做什么，以及对应的资源URI。目前与第2等级的区别在于：客户端在知道服务端入口的情况下，不再需要任何服务端的先验知识，可以根据服务端的返回完成与服务端的交互。</p>
+</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-0fa44129f535248f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="glory-of-rest.png" /></p>
+<h2 id="2-api设计方法原则">2. API设计方法原则</h2>
+<ul>
+<li>
+<p>API设计接轨业务流程的详细分析与设计</p>
+<p>对客户而言，API如同一本说明书，告诉客户有哪些功能可用，以及使用的具体方式；而对服务提供团队而言，API体现为团队对外的责任。因此，只有立足于对业务流程与客户需求的详细分析，才能通过API封装复杂的业务逻辑，从而明确团队需要对外提供的服务。</p>
+</li>
+<li>
+<p>团队统一建模方法，统一技术语言</p>
+<p>业务流程的分析可以帮助我们建立业务模型，从而借助模型进一步分析核心业务数据的流动，以便于后续通过模型和数据流动设计合理的 API。业务模型的设计接轨于业务流程的分析，同时也是 API 设计的前提。不仅如此，在团队中，业务模型可以作为不同角色的团队成员交流的工具：例如，Devloper 可以通过模型与 BA 确认业务需求。统一的建模方法，可以最大程度保证各种角色的团队成员对于业务的理解是一致的。从业务模型中，我们可以抽象出 REST 语义下的资源，资源间的关系可以通过业务数据的流向分析。数据的流动会造成资源状态的变化，而我们要进一步抽象的API便可以表征资源状态的变化过程。</p>
+</li>
+<li>
+<p>结合业务含义正确使用HTTP动词</p>
+<p>在REST语义下，HTTP各动词含义如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+<th>幂等(Y/N)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td>根据客户端提供的数据创建一个资源</td>
+<td>N</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>返回资源的当前展现</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td>根据客户端提供的数据替换指定资源，或者创建一个新的资源</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>删除某个资源</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>HEAD</td>
+<td>返回资源的元信息（如Last-Modified等）</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td>部分更新资源</td>
+<td>N</td>
+</tr>
+<tr>
+<td>OPTIONS</td>
+<td>获取当前资源信息，比如当前资源支持哪些方法的信息</td>
+<td>Y</td>
+</tr>
+</tbody>
+</table>
+<p>根据<a title="http://www.rfc-base.org/txt/rfc-2616.txt" href="http://www.rfc-base.org/txt/rfc-2616.txt">RFC-2616</a>，幂等是指一次和多次请求某一个资源应该具有相同的副作用。幂等的方法意味着请求成功执行所得到的结果不依赖于该方法被执行的次数。例如：通过 PUT 方法将某个资源的 satus 属性置为success，那么无论是第一次执行还是多次执行，获得的结果都是相同的，即执行完成之后都是 status=success。</p>
+</li>
+</ul>
+<h2 id="3-api设计详细步骤">3. API设计详细步骤</h2>
+<h3 id="31-梳理业务流程">3.1 梳理业务流程</h3>
+<p>业务流程的梳理，是我们工作的起点。<a title="https://en.wikipedia.org/wiki/Event_Storming" href="https://en.wikipedia.org/wiki/Event_Storming">Event Storming</a>是一种有效的帮助我们梳理业务的方法，Event Storming的具体步骤可以参考<a title="http://ziobrando.blogspot.hk/2013/11/introducing-event-storming.html" href="http://ziobrando.blogspot.hk/2013/11/introducing-event-storming.html">这篇文档</a>，本文不再赘述。</p>
+<h3 id="32-建立系统模型">3.2 建立系统模型</h3>
+<p>完成业务模型的梳理之后，下一步就是建立系统业务模型了，笔者采用的方法是四色建模，InfoQ上的<a title="http://www.infoq.com/cn/articles/xh-four-color-modeling" href="http://www.infoq.com/cn/articles/xh-four-color-modeling">这篇文章</a>已经做了详细介绍。简单总结如下：</p>
+<ol>
+<li>以满足业务运行为前提，寻找需要追溯的事件。</li>
+<li>根据需要追溯的事件，寻找事件相关的时标性对象。所谓时标性对象，一般与时间有紧密相关关系。</li>
+<li>寻找时标对象周围的人、事、物，并分析它们之间的关系。</li>
+<li>从人、事、物中抽象角色。</li>
+<li>用描述性对象补充说明系统中的人、事、物。</li>
+</ol>
+<p>那么，我们如何判断我们通过上述方法建立的模型是可用的呢？答案便在于业务数据流。我们可以在建立的业务系统模型上，模拟业务事件的发生，分析业务数据流是否能够在模型上流通，从而判断我们建立的模型能否支撑我们的业务。</p>
+<p>以笔者参与的一个实际项目为例：某公司技术人员管理许多数字资产，业务部门的人员需要通过一定的策略对数字资产的状态进行检查，并产生对应的报表。业务建模过程如下：</p>
+<ul>
+<li>寻找需要追溯的时标事件</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-ee1aac25d3f388be.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="time-interval.png" /></p>
+<ul>
+<li>寻找时标对象周围的人/事/物</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-da9aa7c8786161bb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="object-beside-time-interval.png" /></p>
+<ul>
+<li>
+<p>从中抽象角色<br />
+<img src="https://upload-images.jianshu.io/upload_images/101448-2be8174c2332b4ea.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="role-of-object.png" /></p>
+</li>
+<li>
+<p>把一些信息用描述对象补足<br />
+<img src="https://upload-images.jianshu.io/upload_images/101448-92202849d436c624.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="description-of-object.png" /></p>
+</li>
+<li>
+<p>寻找模型中的聚合、引用等关联关系</p>
+</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-feaf693acaa2d9f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="relationships-of-objects.png" /></p>
+<ul>
+<li>识别聚合根</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-6a291ca3762404a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="aggregation-root.png" /></p>
+<h3 id="33-识别资源及设计uri">3.3 识别资源及设计URI</h3>
+<p>根据业务模型，我们分析其中的资源和聚合根，并以每个聚合根为起点，开始设计 URI。在上面的例子中，我们的聚合根为 User 和 policy，因此URI设计如下表。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>URI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>/users</td>
+</tr>
+<tr>
+<td>2</td>
+<td>/users/{uid}</td>
+</tr>
+<tr>
+<td>3</td>
+<td>/users/{uid}/tasks</td>
+</tr>
+<tr>
+<td>4</td>
+<td>/users/{uid}/tasks/{tid}</td>
+</tr>
+<tr>
+<td>5</td>
+<td>/users/{uid}/tasks/{tid}/reports</td>
+</tr>
+<tr>
+<td>6</td>
+<td>/users/{uid}/tasks/{tid}/reports/{rid}</td>
+</tr>
+<tr>
+<td>7</td>
+<td>/users/{uid}/assets</td>
+</tr>
+<tr>
+<td>8</td>
+<td>/users/{uid}/assets/{aid}</td>
+</tr>
+<tr>
+<td>9</td>
+<td>/policies</td>
+</tr>
+<tr>
+<td>10</td>
+<td>/policies/{pid}</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-结合http动词定义restful-api">3.4 结合HTTP动词定义RESTful API</h3>
+<p>结合第一部分说明的在 REST 语义下各 HTTP 动词的含义，分析每个 URI （资源）在这些动词下是否有业务含义，分析如下表。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center">POST</th>
+<th style="text-align:center">GET</th>
+<th style="text-align:center">DELETE</th>
+<th style="text-align:center">PATCH</th>
+<th style="text-align:center">PUT</th>
+<th style="text-align:center">HEAD</th>
+<th style="text-align:center">OPTIONS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>5</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+</tr>
+<tr>
+<td>6</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>7</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>8</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>9</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>10</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">√</td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+<p>结合具体的业务场景和操作者，可以分析每个 API 应该返回的状态码。下表给出了部分（有关 user 和 asset ） API 的使用场景与返回状态码的结果。</p>
+<table>
+<thead>
+<tr>
+<th>WHO</th>
+<th>URI</th>
+<th>METHOD</th>
+<th>SCENE</th>
+<th>RESPONSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Any</td>
+<td>/users</td>
+<td>POST</td>
+<td>创建用户</td>
+<td>成功创建201</td>
+</tr>
+<tr>
+<td>Any</td>
+<td>/users</td>
+<td>POST</td>
+<td>创建用户</td>
+<td>信息有误400</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td>/users</td>
+<td>GET</td>
+<td>查询所有用户信息</td>
+<td>成功获取200</td>
+</tr>
+<tr>
+<td>!Admin</td>
+<td>/users</td>
+<td>GET</td>
+<td>查询所有用户信息</td>
+<td>非法获取403</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}</td>
+<td>GET</td>
+<td>查询某个用户信息</td>
+<td>成功获取200</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}</td>
+<td>GET</td>
+<td>查询某个用户信息</td>
+<td>用户不存在404</td>
+</tr>
+<tr>
+<td>!{Admin or Uid}</td>
+<td>/users/{uid}</td>
+<td>GET</td>
+<td>查询某个用户信息</td>
+<td>非法获取403</td>
+</tr>
+<tr>
+<td>Uid</td>
+<td>/users/{uid}</td>
+<td>PATCH</td>
+<td>修改某用户个人信息</td>
+<td>成功修改204</td>
+</tr>
+<tr>
+<td>Uid</td>
+<td>/users/{uid}</td>
+<td>PATCH</td>
+<td>修改某用户个人信息</td>
+<td>修改有误400</td>
+</tr>
+<tr>
+<td>!Uid</td>
+<td>/users/{uid}</td>
+<td>PATCH</td>
+<td>修改某用户个人信息</td>
+<td>非法修改403</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets</td>
+<td>POST</td>
+<td>创建资产</td>
+<td>成功创建201</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets</td>
+<td>POST</td>
+<td>创建资产</td>
+<td>信息有误400</td>
+</tr>
+<tr>
+<td>!{Admin or Uid}</td>
+<td>/users/{uid}/assets</td>
+<td>POST</td>
+<td>创建资产</td>
+<td>非法创建403</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets</td>
+<td>GET</td>
+<td>查询某用户所有资产信息</td>
+<td>成功获取200</td>
+</tr>
+<tr>
+<td>!{Admin or Uid}</td>
+<td>/users/{uid}/assets</td>
+<td>GET</td>
+<td>查询某用户所有资产信息</td>
+<td>非法获取403</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets</td>
+<td>DELETE</td>
+<td>批量删除某用户的某些资产</td>
+<td>成功删除204</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets</td>
+<td>DELETE</td>
+<td>批量删除某用户的某些资产</td>
+<td>信息有误400</td>
+</tr>
+<tr>
+<td>!{Admin or Uid}</td>
+<td>/users/{uid}/assets</td>
+<td>DELETE</td>
+<td>批量删除某用户的某些资产</td>
+<td>非法删除403</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>GET</td>
+<td>查询某资产详情</td>
+<td>成功获取200</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>GET</td>
+<td>查询某资产详情</td>
+<td>找不到资产信息404</td>
+</tr>
+<tr>
+<td>!{Admin or Uid}</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>GET</td>
+<td>查询某资产详情</td>
+<td>非法获取403</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>PATCH</td>
+<td>修改某资产信息</td>
+<td>成功修改204</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>PATCH</td>
+<td>修改某资产信息</td>
+<td>修改有误400</td>
+</tr>
+<tr>
+<td>Admin or Uid</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>PATCH</td>
+<td>修改某资产信息</td>
+<td>找不到资产信息404</td>
+</tr>
+<tr>
+<td>!{Admin or Uid}</td>
+<td>/users/{uid}/assets/{aid}</td>
+<td>PATCH</td>
+<td>修改某资产信息</td>
+<td>非法修改403</td>
+</tr>
+</tbody>
+</table>
+<h3 id="35-分析资源关系实现hateoas">3.5 分析资源关系实现HATEOAS</h3>
+<p>通过上面的分析，我们得到了每个 API 的返回 Http 状态码，而对于其返回体的设计，可以根据资源及其相关资源的关系来确定。例如 user 和 asset 有关联关系，那么对于<code>GET /users/{uid}</code> 而言，示例返回的 body 体如下：</p>
+<div><pre class="hljs"><code><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/users/1"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"attributes"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+          <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"name"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"felix"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"email"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"felix@example.com"</span>
+      <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"relationships"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+          <span class="hljs-attr">"assets"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+              <span class="hljs-attr">"url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/users/1/assets"</span>
+          <span class="hljs-punctuation">}</span>
+      <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span></code></pre></div>
+<p>用户通过该 API 可以得到用户的详细信息，而通过返回体可以拿到获取该用户下 assets 的API 而无需事先知道这个 API 的存在。理想情况下，资源与资源见的关系组成一张有向关系图，用户从任何一个资源入手，均可以遍历他有权限访问的所有资源。</p>
+<h3 id="36-自动化doc-swagger">3.6 自动化Doc （Swagger）</h3>
+<p>设计好的 RESTful API 可以借助  <a title="https://swagger.io/" href="https://swagger.io/">Swagger</a>  形成文档，从而指导开发。最新的 <a title="https://swagger.io/" href="https://swagger.io/">Swagger</a> 支持 <a title="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md" href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md">Open API 3.0</a> 规范，文档更新方便，并且支持文档的执行，具备较为完善的生态圈，推荐用其发布我们的 API 文档。</p>
+<h3 id="4-参考链接">4. 参考链接</h3>
+<p><a title="https://martinfowler.com/articles/richardsonMaturityModel.html" href="https://martinfowler.com/articles/richardsonMaturityModel.html">Richardson Maturity Model</a></p>
+<p><a title="http://www.infoq.com/cn/articles/xh-four-color-modeling" href="http://www.infoq.com/cn/articles/xh-four-color-modeling">运用四色建模法进行领域分析</a></p>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Git 基础及 Check-in Dance]]></title>
+            <guid>3bf8dd5b4ad6421985d256493fabc0f8</guid>
+            <pubDate>Tue, 11 Jul 2023 07:33:28 GMT</pubDate>
+            <content:encoded><![CDATA[<h2 id="1-check-in-dance">1. Check-in Dance</h2>
+<h3 id="11-流程">1.1 流程</h3>
+<ul>
+<li>
+<p>(1) Run tests in local</p>
+<p>本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+</ul>
+
+<ul>
+<li>
+<p>(2) Check CI status<br />
+检查 CI 状态，确认现在可以拉取代码</p>
+</li>
+<li>
+<p>(3) Pull<br />
+开发新代码之前，从 CI 完全成功的那个最新版本检出代码：<code> $ git pull --rebase</code></p>
+</li>
+<li>
+<p>(4) Run tests in local<br />
+本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li>
+<p>(5) Make changes<br />
+按照 red -&gt; green -&gt; refactor 方式编写代码；</p>
+<ul>
+<li>red：根据 Task 拆分，添加一个新的测试 （由于目前没有实现代码，测试失败）</li>
+<li>green：添加最少的实现代码，使测试通过</li>
+<li>refactor：识别代码中的 bad smell，重构代码</li>
+</ul>
+</li>
+<li>
+<p>(6) Run tests in local<br />
+完成一个小特性以后，本地运行测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li>
+<p>(7) Review Changes<br />
+在 IntelliJ 下 <code> Alt + 9</code> review <code> Local Changes</code></p>
+</li>
+<li>
+<p>(8) Commit to local<br />
+本地提交，小步提交，写清楚 Story 编号有意义的提交信息；</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-string">$ </span>git add .
+<span class="hljs-string">$ </span>git commit -m <span class="hljs-comment">"[US27149] Add entity validation in creation process"</span></code></pre></div>
+<ul>
+<li>
+<p>(9) Check CI status<br />
+检查 CI 状态，确认现在可以拉取代码；</p>
+</li>
+<li>
+<p>(10) Pull<br />
+从远端拉取最新代码：<code>$ git pull --rebase</code><br />
+如果有冲突，修复有冲突的文件，然后</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-meta">$ </span><span class="language-bash">git add .</span>
+<span class="hljs-meta">$ </span><span class="language-bash">git rebase --<span class="hljs-built_in">continue</span></span></code></pre></div>
+<ul>
+<li>
+<p>(11) Run tests in local<br />
+本地运行测试，保证测试通过，如果又失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li>
+<p>(12) Push<br />
+本地 commit 通过测试之后，尽早 push 到远端，以便团队其他人员在新代码库上工作：<code>$ git push</code></p>
+</li>
+<li>
+<p>(13) Check CI status<br />
+查看自己 push 之后，CI 状态正常</p>
+</li>
+</ul>
+<h3 id="12-注意事项">1.2 注意事项</h3>
+<ul>
+<li>(1) 在步骤10中，频繁与远端代码库合并，避免 big bang conflict。如果本地已经较长时间没有拉取代码库的代码，并且观察到其他成员已经进行了较多 commit，而本地有未完成工作不能 commit，如何同步远端代码库的代码呢？</li>
+</ul>
+<p>我们可以先暂存目前的工作，拉取远端的最新代码，然后取回目前的工作与远端代码进行合并。这样可以将合并前移，尽量避免 big bang conflict。</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git stash
+<span class="hljs-variable">$ </span>git pull --rebase
+<span class="hljs-variable">$ </span>git stash pop</code></pre></div>
+<ul>
+<li>(2) 本地测试通过之后，尽早 push，避免big bang conflict</li>
+</ul>
+<hr />
+<h2 id="2-git-简介">2. Git 简介</h2>
+<h3 id="21-基础知识">2.1 基础知识</h3>
+<p>Git 有三种状态，你的文件可能处于其中之一：已提交（committed）、已修改（modified）和已暂存（staged）。 已提交表示数据已经安全的保存在本地数据库中。 已修改表示修改了文件，但还没保存到数据库中。 已暂存表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。</p>
+<p>由此引入 Git 项目的三个工作区域的概念：Git 仓库、工作目录以及暂存区域。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-122a650051cc809b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git-area.png" /></p>
+<h3 id="22-常用命令">2.2 常用命令</h3>
+<div><pre class="hljs"><code><span class="hljs-meta">$ </span><span class="language-bash">git status                      <span class="hljs-comment"># 查看文件处于什么状态</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git <span class="hljs-built_in">log</span>                         <span class="hljs-comment"># 查看提交历史</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git add &lt;filename&gt;              <span class="hljs-comment"># 将需要提交的文件从 Working Directory 添加到 Staging Area</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git commit -m &lt;message&gt;         <span class="hljs-comment"># 将 Staging Area 中的文件快照永久性移动到 Repository</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git commit --amend              <span class="hljs-comment"># 修改上次提交</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git pull --rebase               <span class="hljs-comment"># 拉取远端代码，将本地修改衍合到本地最新代码上</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git push                        <span class="hljs-comment"># 将本地提交推送到远端仓库</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git merge &lt;branchname&gt;          <span class="hljs-comment"># 合并分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout -b &lt;branchname&gt;    <span class="hljs-comment"># 新建并切换 Working Directory 到新分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout -- &lt;filename&gt;      <span class="hljs-comment"># 丢弃文件修改，还原文件状态到上次提交的状态</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git revert HEAD~&lt;number&gt;        <span class="hljs-comment"># 找到倒数第&lt;number&gt;个提交，并创建一个新的提交来撤销之后的更改</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git reset HEAD^ &lt;filename&gt;      <span class="hljs-comment"># 将当前的某个 file 从缓存区移出，不影响工作目录对其进行的修改</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git reset --hard HEAD~&lt;number&gt;  <span class="hljs-comment"># 移除最后&lt;number&gt;个提交，并将缓存区和工作目录同步到指定的提交</span></span> </code></pre></div>
+<h3 id="23-代码回滚">2.3 代码回滚</h3>
+<h4 id="revert">Revert</h4>
+<p>Revert 撤销一个提交的同时会创建一个新的提交。这是一个安全的方法，因为它不会重写提交历史。比如，下面的命令会找出倒数第二个提交，然后创建一个新的提交来撤销这些更改，然后把这个提交加入项目中。</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git checkout hotfix
+<span class="hljs-variable">$ </span>git revert HEAD~<span class="hljs-number">2</span></code></pre></div>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-01deb24707038862.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="reverting.png" /></p>
+<p>在提交层面上，reset 将一个分支的末端指向另一个提交。这可以用来移除当前分支的一些提交。比如，下面这两条命令让 hotfix 分支向后回退了两个提交。</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git checkout hotfix
+<span class="hljs-variable">$ </span>git reset HEAD~<span class="hljs-number">2</span></code></pre></div>
+<p>hotfix 分支末端的两个提交现在变成了悬挂提交。也就是说，下次 Git 执行垃圾回收的时候，这两个提交会被删除。换句话说，如果你想扔掉这两个提交，你可以这么做。reset 操作如下图所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-c6ca067d34997d16.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="resetting.png" /></p>
+<p>如果你的更改还没有共享给别人，<code>git reset</code> 是撤销这些更改的简单方法。当你开发一个功能的时候发现「糟糕，我做了什么？我应该重新来过！」时，<code>reset</code> 就像是 <code>go-to</code> 命令一样。</p>
+<p>除了在当前分支上操作，你还可以通过传入这些标记来修改你的缓存区或工作目录：</p>
+<p>--soft – 缓存区和工作目录都不会被改变<br />
+--mixed – 默认选项。缓存区和你指定的提交同步，但工作目录不受影响<br />
+--hard – 缓存区和工作目录都同步到你指定的提交</p>
+<p>把这些标记想成定义 git reset 操作的作用域就容易理解多了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-f5a4bdc6e0f750fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="scope-of-reset.png" /></p>
+<p>当你传入 HEAD 以外的其他提交的时候要格外小心，因为 reset 操作会重写当前分支的历史。正如 rebase 黄金法则所说的，在公共分支上这样做可能会引起严重的后果。下表总结了 reset、checkout 和 revert 应用到文件层面和提交层面的常用场景。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用域</th>
+<th>常用情景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git reset</td>
+<td>提交层面</td>
+<td>在私有分支上舍弃一些没有提交的更改</td>
+</tr>
+<tr>
+<td>git reset</td>
+<td>文件层面</td>
+<td>将文件从缓存区中移除</td>
+</tr>
+<tr>
+<td>git checkout</td>
+<td>提交层面</td>
+<td>切换分支或查看旧版本</td>
+</tr>
+<tr>
+<td>git checkout</td>
+<td>文件层面</td>
+<td>舍弃工作目录中的更改</td>
+</tr>
+<tr>
+<td>git revert</td>
+<td>提交层面</td>
+<td>在公共分支上回滚更改</td>
+</tr>
+<tr>
+<td>git revert</td>
+<td>文件层面</td>
+<td>（然而并没有）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-ci-变红之后的操作指导">3. CI 变红之后的操作指导</h2>
+<h3 id="31-责任人">3.1 责任人</h3>
+<ul>
+<li>
+<p>(1) 提交之后 Working Directory 或 Stage Area 是否存在未 commit 的修改</p>
+<ul>
+<li>如果存在未 commit 的修改</li>
+</ul>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git stash  <span class="hljs-comment"># 保存目前的修改，工作区和暂存区内容回到问题提交点的状态 </span>
+<span class="hljs-variable">$ </span>git status <span class="hljs-comment"># 确认状态是否正确 </span></code></pre></div>
+<ul>
+<li>
+<p>(2) 运行测试</p>
+<ul>
+<li>
+<p>测试未通过，说明 push 之前没有在本地运行测试，未按照 check-in dance 的步骤提交代码</p>
+<p><strong>可以自己打脸提醒一下，不要再犯</strong>，暂时放下其他工作，开始全力 Debug 吧</p>
+</li>
+<li>
+<p>测试通过，说明很有可能是因为本地环境与 CI 环境不同，比如数据不一致等原因</p>
+<p>可以自己打脸清醒一下，暂时放下其他工作，开始全力 Debug 吧</p>
+</li>
+</ul>
+</li>
+<li>
+<p>(3) bug 修复流程</p>
+</li>
+</ul>
+<div><pre class="hljs"><code>$ git checkout -b hot-<span class="hljs-built_in">fix</span>   # 创建并切换到 hot-<span class="hljs-built_in">fix</span> 分支，在该分支修复 bug</code></pre></div>
+<ul>
+<li>(4) 15分钟之内，是否完成了 bug 修复</li>
+</ul>
+<p>完成了 bug 修复，并在本地经过了测试验证</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git add .                   <span class="hljs-comment"># 将修改保存到暂存区，准备提交</span>
+<span class="hljs-variable">$ </span>git commit -m &lt;message&gt;     <span class="hljs-comment"># 将修改提交到 hot-fix 分支</span>
+<span class="hljs-variable">$ </span>git checkout master         <span class="hljs-comment"># 切换到 master 分支</span>
+<span class="hljs-variable">$ </span>git rebase master hot-fix   <span class="hljs-comment"># 将 bug 修改过程在 master 分支重演</span>
+<span class="hljs-variable">$ </span>git pull --rebase           <span class="hljs-comment"># 原则上 CI 红了其他人不能提交，这一步可以忽略</span>
+<span class="hljs-variable">$ </span>git push                    <span class="hljs-comment"># 将修改提交到远端</span></code></pre></div>
+<p>未完成 bug 修复</p>
+<div><pre class="hljs"><code><span class="hljs-meta">$ </span><span class="language-bash">git stash                   <span class="hljs-comment"># 保存在 hot-fix 分支未完成的修复工作</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout master         <span class="hljs-comment"># 切换到 master 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git revert &lt;commit <span class="hljs-built_in">hash</span>&gt;    <span class="hljs-comment"># 创建一个 revert 提交撤销引入 bug 的修改</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git pull --rebase           <span class="hljs-comment"># 原则上 CI 红了其他人不能提交，这一步可以忽略</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git push                    <span class="hljs-comment"># 回退 CI 的代码，先修复 CI，保证其他人可以提交</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout hot-fix        <span class="hljs-comment"># 切换回 hot-fix 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git stash pop               <span class="hljs-comment"># 恢复目前已经进行的修复工作，继续修复</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git add .                   <span class="hljs-comment"># 修复完成，将修改保存到暂存区，准备提交</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git commit -m &lt;message&gt;     <span class="hljs-comment"># 将修改提交到 hot-fix 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout master         <span class="hljs-comment"># 切换到 master 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git rebase master hot-fix   <span class="hljs-comment"># 将 bug 修改过程在 master 分支重演</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git pull --rebase           <span class="hljs-comment"># 原则上 CI 红了其他人不能提交，这一步可以忽略</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git push                    <span class="hljs-comment"># 将修改提交到远端</span></span>    </code></pre></div>
+<h3 id="32-其他成员">3.2 其他成员</h3>
+<ol>
+<li>
+<p><strong>CI 变红之后暂停提交代码，直至 CI 变绿</strong></p>
+</li>
+<li>
+<p>CI 变绿之后</p>
+</li>
+</ol>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git stash                        <span class="hljs-comment"># 保存目前的工作，如果工作区和暂存区是干净的，忽略此步骤</span>
+<span class="hljs-variable">$ </span>git pull --rebase                <span class="hljs-comment"># 拉取最新的修复之后的代码</span>
+<span class="hljs-variable">$ </span>git stash pop                    <span class="hljs-comment"># 恢复当前工作区，继续工作</span></code></pre></div>
+<h2 id="4-参考文献">4. 参考文献</h2>
+<ol>
+<li><a title="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9" href="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9">代码回滚：Reset、Checkout、Revert-的选择</a></li>
+<li><a title="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging" href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging">Git Branch and Merging</a></li>
+</ol>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[日志规范]]></title>
+            <guid>229b5e6013dc4c29841e983cf2dfe986</guid>
+            <pubDate>Tue, 11 Jul 2023 07:31:22 GMT</pubDate>
+            <content:encoded><![CDATA[<p>日志用来记录用户操作、系统运行状态等，是一个系统的重要组成部分。然而，由于日志通常不属于系统的核心功能，所以常常不被团队成员所重视。对于一些简单的小程序，可能并不需要在如何记录日志的问题上花费太多精力。但是对于作为基础平台为很多产品提供服务的后端程序，就必须要考虑如何依靠良好的日志来保证系统可靠的运行了。</p>
+<h2 id="1-记录日志的目的">1. 记录日志的目的</h2>
+<ul>
+<li>了解线上系统运行状态</li>
+<li><strong>快速准确定位线上问题</strong></li>
+<li><strong>记录业务相关操作</strong></li>
+<li>发现系统瓶颈</li>
+<li>预警系统潜在风险</li>
+</ul>
+<h2 id="2-需要记录哪些信息">2. 需要记录哪些信息</h2>
+<p>理想的日志需要记录不多不少的信息，既不要让定位问题时缺乏足够的信息支撑，又不要输出太多的无用信息，导致真正有用的消息被淹没。为了实现目前最为重要的两个目的：快速准确定位线上问题和记录业务相关操作。我们规定记录要求如下。</p>
+<h3 id="21-记录要求">2.1 记录要求</h3>
+<ol>
+<li>针对快速准确定位线上问题
+<ul>
+<li>确认服务启动时配置参数是否正确加载</li>
+<li>请求出错时，可以直接通过日志定位问题</li>
+<li>确认服务后台任务是否按照期望执行</li>
+<li>确认服务的异常处理逻辑（如重试）是否正确执行</li>
+</ul>
+</li>
+<li>针对记录业务相关操作
+<ul>
+<li>确认Flow执行过程与状态</li>
+</ul>
+</li>
+</ol>
+<p>针对第1个要求，分析需要记录的时间点与信息如下：</p>
+<ul>
+<li>服务启动与配置参数的加载</li>
+<li>请求的入口与出口</li>
+<li>外部服务的调用与返回</li>
+<li>程序异常：如数据库无法连接等</li>
+<li>后台操作：如Flow运行的过程与状态</li>
+<li>资源消耗操作：如打开文件等</li>
+<li>重要的状态变化</li>
+<li>长期执行的任务的执行进度</li>
+</ul>
+<p>针对第2个要求，分析需要记录的信息与时间点如下：</p>
+<ul>
+<li>Flow开始执行，配置信息</li>
+<li>工具开始执行，配置信息</li>
+<li>工具执行结束，结果状态或失败原因</li>
+<li>Flow执行结束，结果状态或失败原因</li>
+</ul>
+<p>这些消息，我们应该分类存储，方便我们查看和分析问题。这里我们简单介绍一下日志分类与级别。</p>
+<h2 id="3-日志分类与级别">3. 日志分类与级别</h2>
+<h3 id="31-日志分类">3.1 日志分类</h3>
+<p>从功能上来说，日志可分为：诊断日志、统计日志、审计日志。诊断日志通常用来获取错误发生的具体环境，跟踪分析错误出现的原因以便于解决错误；统计日志是用来进行访问统计的，比如用户IP、上传与下载的数据量、请求耗时等。</p>
+<h3 id="32-日志级别">3.2 日志级别</h3>
+<p><strong>FATAL</strong>：表示需要立即被处理的系统级错误，该错误出现时，表示服务出现了某种程度的不可用，系统管理员需要立即介入。这属于最严重的日志级别。<strong>一个进程的生命周期中应该只记录一次FATAL级别的日志，即该进程遇到无法恢复的错误而退出时</strong>。</p>
+<p><strong>ERROR</strong>：该级别的错误也需要马上被处理，但是紧急程度要低于FATAL级别。当ERROR错误发生时，已经影响了用户的正常访问。<strong>特别需要注意的是，ERROR和FATAL都属于服务器自己的异常，是需要马上得到人工介入并处理的。而对于用户自己操作不当，如请求参数错误等等，是绝对不应该记为ERROR日志的</strong>。</p>
+<p><strong>WARN</strong>：该日志表示系统可能出现问题，也可能没有，这种情况如网络的波动等。对于那些目前还不是错误，然而不及时处理也会变为错误的情况，也可以记为WARN日志，例如一个存储系统的磁盘使用量超过阀值，或者系统中某个用户的存储配额快用完等等。</p>
+<p><strong>INFO</strong>：该种日志记录系统的正常运行状态，例如某个子系统的初始化，某个请求的成功执行等等。通过查看INFO级别的日志，可以很快地对系统中出现的 WARN,ERROR,FATAL错误进行定位。</p>
+<p><strong>DEBUG</strong> or <strong>TRACE</strong>：对系统每一步的运行状态进行精确的记录。通过该种日志，可以查看某一个操作每一步的执行过程，可以准确定位是何种操作，何种参数，何种顺序导致了某种错误的发生。可以保证在不重现错误的情况下，也可以通过DEBUG（或TRACE）级别的日志对问题进行诊断。</p>
+<h2 id="4-日志切分">4. 日志切分</h2>
+<p>针对我们的需求，我们目前需要诊断日志和业务日志。而将诊断日志和业务日志分开存放，便于开发人员查看，也便于我们通过日志系统进行及时监控。另外，我们将错误日志单独存放一份，便于问题定位。</p>
+<ol>
+<li>首先，我们将日志分为两类：
+<ul>
+<li>诊断日志：diagnostic</li>
+<li>业务日志：business</li>
+<li>错误日志：error</li>
+</ul>
+</li>
+<li>日志文件不宜过大，过大的日志文件给问题定位和日志监控带来不便
+<ul>
+<li>按天分割</li>
+<li>按小时分割</li>
+<li>按日志大小分割（如每10MB分割一次）</li>
+<li>按天和日志大小结合进行分割</li>
+</ul>
+</li>
+<li>日志存储位置
+<ul>
+<li>业务日志存储到数据库(and|or)文件</li>
+<li>其他日志存储到文件</li>
+</ul>
+</li>
+<li>日志命名（appName_logType_logName.log）
+<ul>
+<li>按天分割：ams_flow_service_diag_20180821.log</li>
+<li>按小时分割：ams_flow_service_busi_20180821_0800.log</li>
+<li>按日志大小分割：ams_flow_service_error_1.log</li>
+</ul>
+</li>
+</ol>
+<p>关于日志分割的配置，可以通过日志组件的<em>日志处理策略</em><code>appender</code>中的<em>滚动策略</em><code>rollingPolicy</code>进行配置。例如：</p>
+<div><pre class="hljs"><code>    <span class="hljs-tag">&lt;<span class="hljs-name">appender</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"FILE"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.core.rolling.RollingFileAppender"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">rollingPolicy</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.core.rolling.TimeBasedRollingPolicy"</span>&gt;</span>
+            <span class="hljs-comment">&lt;!--日志文件输出的文件名--&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">FileNamePattern</span>&gt;</span>${LOG_HOME}/${PROJECT_NAME}.%d{yyyy-MM-dd}.log<span class="hljs-tag">&lt;/<span class="hljs-name">FileNamePattern</span>&gt;</span>
+            <span class="hljs-comment">&lt;!--日志文件保留天数--&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">MaxHistory</span>&gt;</span>30<span class="hljs-tag">&lt;/<span class="hljs-name">MaxHistory</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">rollingPolicy</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">encoder</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.classic.encoder.PatternLayoutEncoder"</span>&gt;</span>
+            <span class="hljs-comment">&lt;!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符--&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">pattern</span>&gt;</span>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n<span class="hljs-tag">&lt;/<span class="hljs-name">pattern</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">encoder</span>&gt;</span>
+        <span class="hljs-comment">&lt;!--日志文件最大的大小--&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">triggeringPolicy</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">MaxFileSize</span>&gt;</span>10MB<span class="hljs-tag">&lt;/<span class="hljs-name">MaxFileSize</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">triggeringPolicy</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">appender</span>&gt;</span></code></pre></div>
+<h2 id="5-日志格式">5. 日志格式</h2>
+<p>日志格式需要统一，不能任由个人喜好。举个例子，对于flow执行异常，有以下几种方式打印输出：</p>
+<div><pre class="hljs"><code><span class="hljs-comment">// 第一种</span>
+logger.error(<span class="hljs-string">"Flow executing exception for request "</span> + getRequestId() + <span class="hljs-string">" value: "</span> + value, e);
+
+<span class="hljs-comment">// 第二种</span>
+logger.error(<span class="hljs-string">"RequestID: "</span> + getRequestId() + <span class="hljs-string">", Error Message: Flow executing exception: "</span> + e);
+
+<span class="hljs-comment">// 第三种</span>
+logger.error(errorMessage(getRequestId(), getErrorMessage(), e));</code></pre></div>
+<p>那么，我们选择第三种方式可以通过函数接口规范日志格式，以便所有开发人员都可以通过该接口实现统一的日志。</p>
+<h2 id="6-常见问题">6. 常见问题</h2>
+<ol>
+<li>
+<p>Spring中Logger的获取</p>
+<ul>
+<li>常见方式</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Logger</span> <span class="hljs-variable">LOGGER</span> <span class="hljs-operator">=</span> LoggerFactory.getLogger(Flow.class);</code></pre></div>
+<ul>
+<li>自定义注解和<code>Injector</code>并实现<code>BeanPostProcessor</code>,参考<a title="https://dzone.com/articles/inject-slf4j-logger-annotation" href="https://dzone.com/articles/inject-slf4j-logger-annotation">这里</a></li>
+<li>使用<code>Lombok</code>,参考<a title="https://projectlombok.org/features/log" href="https://projectlombok.org/features/log">这里</a></li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-meta">@Slf4j</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LogExample</span> {
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String... args)</span> {
+    log.error(<span class="hljs-string">"Something else is wrong here"</span>);
+  }
+}</code></pre></div>
+</li>
+<li>
+<p>Spring中Logger的配置，能否默认提供一些信息，比如用户信息，请求IP等</p>
+</li>
+<li>
+<p>生成Request ID的原则</p>
+<ul>
+<li>IP + TIME + UID</li>
+<li>简单随机数</li>
+<li>MDC（服务器信息+用户请求信息）</li>
+</ul>
+</li>
+<li>
+<p>实时日志等级调整工具</p>
+</li>
+<li>
+<p>splunk</p>
+</li>
+</ol>
+<h2 id="7-注意事项">7. 注意事项</h2>
+<ol>
+<li>
+<p>应用中不可直接使用日志系统（Log4j、Logback）中的API，而应该依赖使用日志框架Slf4j中的API，使用门面模式的日志框架，有利于维护和各个类的日志处理方式统一。</p>
+<blockquote>
+<p>slf4j是日志门面框架，其仅提供日志记录的API，而不实现日志记录的功能，slf4j需要通过适配库适配到log4j或logback等日志系统来实现日志的记录。使用slf4j api能够提升代码和应用的可移植性，在使用不同日志系统的应用之间能够做到无缝的适配。同时，使用slf4j api的应用，在切换日志系统时（比如从logback切换到log4j2，不需要代码改造）</p>
+</blockquote>
+</li>
+<li>
+<p>日志文件推荐至少保存15天，某些异常可能具备以“周”为频率发生的特点</p>
+</li>
+<li>
+<p>对TRACE/DEBUG/INFO级别的日志输出，必须使用条件输出形式或者使用占位符的方式。</p>
+<div><pre class="hljs"><code>logger.debug(<span class="hljs-string">"Flow executing with flow config id: "</span> + flowConfig.getId() + <span class="hljs-string">" config: "</span> + flowConfig);</code></pre></div>
+<p>对于上述语句，如果我们的日志级别设置为WARN，那么上述日志不会打印，但是会执行字符串的拼接操作，并且调用<code>flowConfig</code>的<code>toString()</code>方法，浪费了系统资源，执行了上述操作，然而日志最终并不会打印。</p>
+<div><pre class="hljs"><code><span class="hljs-comment">// 使用条件语句</span>
+<span class="hljs-keyword">if</span> (logger.idDebugEnabled()) {
+    logger.debug(<span class="hljs-string">"Flow executing with flow config id: "</span> + flowConfig.getId() + <span class="hljs-string">" config: "</span> + flowConfig);
+}
+
+<span class="hljs-comment">// 使用占位符</span>
+<span class="hljs-comment">// log4j2和logback支持占位符，但log4j不支持</span>
+logger.debug(<span class="hljs-string">"Flow executing with id: {} config: {}"</span>, flowConfig.getId(), flowConfig);</code></pre></div>
+</li>
+<li>
+<p>避免重复打印日志</p>
+<p>例如在log4j中需要设置<code>additivity=false</code>,避免将logger生成的日志输出到root logger的同时还输出到该logger指定的独立的appender。</p>
+</li>
+</ol>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Git 分支模型与开发部署流水线]]></title>
+            <guid>b4e5e8f1202f42d7bcb98ea29b4e4275</guid>
+            <pubDate>Tue, 11 Jul 2023 07:30:12 GMT</pubDate>
+            <content:encoded><![CDATA[<h2 id="1-分支模型">1. 分支模型</h2>
+<blockquote>
+<p>We firmly believe that long-lived version-control branches harm valuable engineering practices such as continuous integration, and this belief underlies our dislike for Gitflow.<br />
+—— ThoughtWorks Technology Radar 2015 Nov</p>
+</blockquote>
+<p><a title="http://nvie.com/posts/a-successful-git-branching-model/" href="http://nvie.com/posts/a-successful-git-branching-model/">Gitflow</a> 是由 Vincent Driessen 在2010年提出的基于 Git 的软件开发工作流，但与持续集成（Continuous Integration，CI）的实践有不少冲突的地方，在团队开发中不推荐采用，具体分析可以参见 <a title="http://insights.thoughtworkers.org/gitflow-consider-harmful/" href="http://insights.thoughtworkers.org/gitflow-consider-harmful/">Gitflow有害论</a> 。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-b251d4d5aaa37253.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Git Flow" /></p>
+<p>我们采用单主干开发的 Git 分支模型（<a title="https://paulhammant.com/2013/04/05/what-is-trunk-based-development/" href="https://paulhammant.com/2013/04/05/what-is-trunk-based-development/">Trunk Based Development</a>），所有的开发工作均在 master 分支上进行，同时利用 CI 流水线进行持续集成，保证 master 中的代码随时都可以发布到生产。除了利用 master 进行开发，我们利用 release 分支进行发布的跟踪。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-61bcacfb687ce855.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Trunk Based Development" /></p>
+<h2 id="2-持续发布流水线">2. 持续发布流水线</h2>
+<p>除了持续集成（CI），项目还涉及自动化测试与持续部署（Continuous Deployment，CD） 因此，我们会有开发环境与测试环境，而测试环境又可以分为 SIT 测试、UAT 测试与压力测试等等。那么代码应该在什么时候发布，发布什么样的版本，这些版本又如何追踪，发现 bug 之后如何处理呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-17e1e91db1cf1c59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Trunk Based Development with Release" /></p>
+<p>我们的流水线模型如上图所示，采用单主干开发策略。</p>
+<ol>
+<li>
+<p>所有的开发人员都在 master 分支提交代码，每次提交都触发 CI 构建，并在 CI 环境执行自动化测试，测试通过之后可以由测试人员发布到 SIT 环境并进行测试。</p>
+</li>
+<li>
+<p>发布人员根据项目进度，选取合适并通过 SIT 测试的 commit 节点，打上 tag 作为 SNAPSHOT 版本，并合并到 release 分支，在release分支中采用 RC (Release Candidate) 标记版本。</p>
+</li>
+<li>
+<p>将 RC 版本发布到 UAT 环境进行测试，如果测试通过则发布到生产环境并将该版本标记为 release 版本，如果测试发现 bug：</p>
+<ul>
+<li>
+<p>将该 RC 版本标记为不可靠。</p>
+</li>
+<li>
+<p>回滚到上一个可靠版本。</p>
+</li>
+<li>
+<p>在 master 分支进行修复，并 cherry pick 到 release 分支，并标记新的 RC 版本号。</p>
+</li>
+<li>
+<p>如果 master 分支有新的 commit 提交而不能重现 bug，则从原始 commit 节点拉取 hot-fix 分支，bug 修复完成后，cherry pick 到 release 分支，标记新的 RC 版本号，并将 hot-fix 上的修改 merge 到 master。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>在 release 分支选择 RC 标记版本，主要理由如下：</strong></p>
+<ol>
+<li>假如在 release 分支采用 SNAPSHOT 版本并部署到 UAT 环境，由于 SNAPSHOT 可以不断被覆盖，我们无法回滚到前几次 hot fix 产生的 SNAPSHOT 版本。</li>
+<li>加入使用 release 版本：由于每次 hot fix 产生一个新的 release 版本，但这个版本并没有通过 UAT 测试验证，如果验证失败，就属于不可靠版本，与 release 版本的原始语义相违背。</li>
+<li>选用 RC 版本，每次 hot fix 都产生一个新的 RC 版本，部署到 UAT 发现问题之后，可以快速回滚到上个 RC 版本或者 release 版本；如果验证该 RC 版本不可靠，可以立即对其做不可靠标记。我们只对可靠的 RC 版本标记为 release 并部署到生产环境。</li>
+</ol>
+<p><strong>在 master 修复 bug 之后，选择 cherry-pick 而非 merge 的理由如下：</strong></p>
+<p>对于团队而言，发布人员在合并 master 到 release 之后，开发人员可以继续开发新的feature，这个时候 release 和 master 是有区别的。bug 修复完成之后，直接 merge 到 release 分支有可能在发布版本引入还没有测试的新的 feature，甚至是还没有完成的 feature，这是我们不想看到的。因此，我们只需要 cherry pick 修复 bug 的有关 commit 到 release 分支。</p>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Spring-Boot 中的洋葱架构]]></title>
+            <guid>bdabb35642a9410caa118dd2ba4fc91d</guid>
+            <pubDate>Tue, 11 Jul 2023 06:40:09 GMT</pubDate>
+            <content:encoded><![CDATA[<h2 id="1-目录结构">1. 目录结构</h2>
+<p>本项目的代码按照“洋葱架构”进行组织。如图所示，代码分为四个层次：<br />
+<img src="https://zcfelix-images.oss-cn-shenzhen.aliyuncs.com/joplin-pics/9a61bd43-d3a5-4ad0-b284-cf808e7b5205.png" alt="洋葱架构" /></p>
+<ul>
+<li>User Interface / Infrastructure</li>
+<li>Application Service</li>
+<li>Domain Service</li>
+<li>Domain Model</li>
+</ul>
+<p>需要注意的是，代码的依赖是单向的：即外层依赖内层或同层，禁止反向依赖。最里层的 Domain Model 包含最核心的业务逻辑，只依赖自己。</p>
+<h2 id="2-基于-spring-boot-的洋葱架构">2. 基于 Spring Boot 的洋葱架构</h2>
+<ul>
+<li>所有可以复用的业务逻辑应该写在 Domain Model 层中。</li>
+<li>Domain Service 层应该尽量薄，理想情况下应该只包含 repository 的接口定义和注解。</li>
+<li>如果需要用 QueryDsl 定制查询，应该把接口定义在 Domain Service 层，把实现写在 User Interface 层。</li>
+<li>每增加一个 RESTful 接口，都要在 Application Service 和 User Interface 层的 Controller 上增加一个函数。</li>
+<li>Controller 中的每个函数只有一行代码，负责把 HTTP 协议和 JSON 格式映射到 Application Service 上。</li>
+<li>Application Service 层应当编排业务逻辑，把 Domain Model 层、Domain Service 层和外部依赖组装起来。</li>
+<li>为了适应 Spring Boot 的约定，对洋葱架构需要有所调整，我们允许本应属于外层的职责，以注解的形式配置在内层。
+<ul>
+<li>例如，用注解方式编写的 SQL 语句可以放在 Domain Service 层，但以 Java 函数编写的 SQL 查询的实现不能放在 Domain Service 层而必须放在 User Interface 层。</li>
+<li>再如，以 <code>javax.validation</code> 注解表示的校验逻辑可以放在 Domain Model 层，但是以 Java 函数编写的校验逻辑不能放在 Domain Model 层而必须写在 Application Service 层。</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-洋葱架构各层职责速查表">3. 洋葱架构各层职责速查表</h2>
+<table class="jop-noMdConv">
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">职责</th>
+		<th class="jop-noMdConv">描述</th>
+		<th class="jop-noMdConv">Domain Model</th>
+		<th class="jop-noMdConv">Domain Service</th>
+		<th class="jop-noMdConv">Application Service</th>
+		<th class="jop-noMdConv">User Interface</th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">聚合根</th>
+		<th class="jop-noMdConv">可复用的充血模型</th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">其他实体对象和值对象</th>
+		<th class="jop-noMdConv">可复用的充血模型</th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">O/R Mapping</th>
+		<th class="jop-noMdConv">注解（JPA）</th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+		<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">应用服务</th>
+		<th class="jop-noMdConv">难以复用的业务逻辑编排，与 RESTful 接口一一对应</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+		<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">控制器</th>
+		<th class="jop-noMdConv">映射 HTTP 协议到服务，与 RESTful 接口一一对应</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv">√</th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td rowspan="4" class="jop-noMdConv">资源库</td>
+		<td class="jop-noMdConv">接口</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">注解（Spring Data）</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">实现</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">配置</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th rowspan="3" class="jop-noMdConv">外部服务客户端</th>
+		<th class="jop-noMdConv">接口</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">注解（Open Feign）</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">配置</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td rowspan="3" class="jop-noMdConv">数据传输对象</td>
+		<td class="jop-noMdConv">借用现有的值对象或实体对象作为数据传输对象</td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">外部服务所需的数据传输对象</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">定制的数据传输对象，如 HttpError</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td rowspan="3" class="jop-noMdConv">数据校验</td>
+		<td class="jop-noMdConv">注解（JSR 380）</td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">模型手动校验</td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">参数手动校验</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">其他配置</td>
+		<td class="jop-noMdConv">错误处理、序列化、JSON 格式转换、RESTful 链接</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+</table>
+]]></content:encoded>
+        </item>
+    </channel>
+</rss>

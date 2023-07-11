@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>Git 基础及 Check-in Dance - zcfelix</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zcfelix</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">Git 基础及 Check-in Dance</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1689060808201"
+                  >2023-07-11 15:33</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1689061093299"
+                  >2023-07-11 15:38</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">Git</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h2 id="1-check-in-dance">1. Check-in Dance</h2>
+<h3 id="11-流程">1.1 流程</h3>
+<ul>
+<li>
+<p>(1) Run tests in local</p>
+<p>本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+</ul>
+
+<ul>
+<li>
+<p>(2) Check CI status<br />
+检查 CI 状态，确认现在可以拉取代码</p>
+</li>
+<li>
+<p>(3) Pull<br />
+开发新代码之前，从 CI 完全成功的那个最新版本检出代码：<code> $ git pull --rebase</code></p>
+</li>
+<li>
+<p>(4) Run tests in local<br />
+本地运行测试，保证测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li>
+<p>(5) Make changes<br />
+按照 red -&gt; green -&gt; refactor 方式编写代码；</p>
+<ul>
+<li>red：根据 Task 拆分，添加一个新的测试 （由于目前没有实现代码，测试失败）</li>
+<li>green：添加最少的实现代码，使测试通过</li>
+<li>refactor：识别代码中的 bad smell，重构代码</li>
+</ul>
+</li>
+<li>
+<p>(6) Run tests in local<br />
+完成一个小特性以后，本地运行测试通过，如果有失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li>
+<p>(7) Review Changes<br />
+在 IntelliJ 下 <code> Alt + 9</code> review <code> Local Changes</code></p>
+</li>
+<li>
+<p>(8) Commit to local<br />
+本地提交，小步提交，写清楚 Story 编号有意义的提交信息；</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-string">$ </span>git add .
+<span class="hljs-string">$ </span>git commit -m <span class="hljs-comment">"[US27149] Add entity validation in creation process"</span></code></pre></div>
+<ul>
+<li>
+<p>(9) Check CI status<br />
+检查 CI 状态，确认现在可以拉取代码；</p>
+</li>
+<li>
+<p>(10) Pull<br />
+从远端拉取最新代码：<code>$ git pull --rebase</code><br />
+如果有冲突，修复有冲突的文件，然后</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-meta">$ </span><span class="language-bash">git add .</span>
+<span class="hljs-meta">$ </span><span class="language-bash">git rebase --<span class="hljs-built_in">continue</span></span></code></pre></div>
+<ul>
+<li>
+<p>(11) Run tests in local<br />
+本地运行测试，保证测试通过，如果又失败就立即修复，直至测试成功：<code>$ mvn test</code></p>
+</li>
+<li>
+<p>(12) Push<br />
+本地 commit 通过测试之后，尽早 push 到远端，以便团队其他人员在新代码库上工作：<code>$ git push</code></p>
+</li>
+<li>
+<p>(13) Check CI status<br />
+查看自己 push 之后，CI 状态正常</p>
+</li>
+</ul>
+<h3 id="12-注意事项">1.2 注意事项</h3>
+<ul>
+<li>(1) 在步骤10中，频繁与远端代码库合并，避免 big bang conflict。如果本地已经较长时间没有拉取代码库的代码，并且观察到其他成员已经进行了较多 commit，而本地有未完成工作不能 commit，如何同步远端代码库的代码呢？</li>
+</ul>
+<p>我们可以先暂存目前的工作，拉取远端的最新代码，然后取回目前的工作与远端代码进行合并。这样可以将合并前移，尽量避免 big bang conflict。</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git stash
+<span class="hljs-variable">$ </span>git pull --rebase
+<span class="hljs-variable">$ </span>git stash pop</code></pre></div>
+<ul>
+<li>(2) 本地测试通过之后，尽早 push，避免big bang conflict</li>
+</ul>
+<hr />
+<h2 id="2-git-简介">2. Git 简介</h2>
+<h3 id="21-基础知识">2.1 基础知识</h3>
+<p>Git 有三种状态，你的文件可能处于其中之一：已提交（committed）、已修改（modified）和已暂存（staged）。 已提交表示数据已经安全的保存在本地数据库中。 已修改表示修改了文件，但还没保存到数据库中。 已暂存表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。</p>
+<p>由此引入 Git 项目的三个工作区域的概念：Git 仓库、工作目录以及暂存区域。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-122a650051cc809b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git-area.png" /></p>
+<h3 id="22-常用命令">2.2 常用命令</h3>
+<div><pre class="hljs"><code><span class="hljs-meta">$ </span><span class="language-bash">git status                      <span class="hljs-comment"># 查看文件处于什么状态</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git <span class="hljs-built_in">log</span>                         <span class="hljs-comment"># 查看提交历史</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git add &lt;filename&gt;              <span class="hljs-comment"># 将需要提交的文件从 Working Directory 添加到 Staging Area</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git commit -m &lt;message&gt;         <span class="hljs-comment"># 将 Staging Area 中的文件快照永久性移动到 Repository</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git commit --amend              <span class="hljs-comment"># 修改上次提交</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git pull --rebase               <span class="hljs-comment"># 拉取远端代码，将本地修改衍合到本地最新代码上</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git push                        <span class="hljs-comment"># 将本地提交推送到远端仓库</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git merge &lt;branchname&gt;          <span class="hljs-comment"># 合并分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout -b &lt;branchname&gt;    <span class="hljs-comment"># 新建并切换 Working Directory 到新分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout -- &lt;filename&gt;      <span class="hljs-comment"># 丢弃文件修改，还原文件状态到上次提交的状态</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git revert HEAD~&lt;number&gt;        <span class="hljs-comment"># 找到倒数第&lt;number&gt;个提交，并创建一个新的提交来撤销之后的更改</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git reset HEAD^ &lt;filename&gt;      <span class="hljs-comment"># 将当前的某个 file 从缓存区移出，不影响工作目录对其进行的修改</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git reset --hard HEAD~&lt;number&gt;  <span class="hljs-comment"># 移除最后&lt;number&gt;个提交，并将缓存区和工作目录同步到指定的提交</span></span> </code></pre></div>
+<h3 id="23-代码回滚">2.3 代码回滚</h3>
+<h4 id="revert">Revert</h4>
+<p>Revert 撤销一个提交的同时会创建一个新的提交。这是一个安全的方法，因为它不会重写提交历史。比如，下面的命令会找出倒数第二个提交，然后创建一个新的提交来撤销这些更改，然后把这个提交加入项目中。</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git checkout hotfix
+<span class="hljs-variable">$ </span>git revert HEAD~<span class="hljs-number">2</span></code></pre></div>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-01deb24707038862.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="reverting.png" /></p>
+<p>在提交层面上，reset 将一个分支的末端指向另一个提交。这可以用来移除当前分支的一些提交。比如，下面这两条命令让 hotfix 分支向后回退了两个提交。</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git checkout hotfix
+<span class="hljs-variable">$ </span>git reset HEAD~<span class="hljs-number">2</span></code></pre></div>
+<p>hotfix 分支末端的两个提交现在变成了悬挂提交。也就是说，下次 Git 执行垃圾回收的时候，这两个提交会被删除。换句话说，如果你想扔掉这两个提交，你可以这么做。reset 操作如下图所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-c6ca067d34997d16.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="resetting.png" /></p>
+<p>如果你的更改还没有共享给别人，<code>git reset</code> 是撤销这些更改的简单方法。当你开发一个功能的时候发现「糟糕，我做了什么？我应该重新来过！」时，<code>reset</code> 就像是 <code>go-to</code> 命令一样。</p>
+<p>除了在当前分支上操作，你还可以通过传入这些标记来修改你的缓存区或工作目录：</p>
+<p>--soft – 缓存区和工作目录都不会被改变<br />
+--mixed – 默认选项。缓存区和你指定的提交同步，但工作目录不受影响<br />
+--hard – 缓存区和工作目录都同步到你指定的提交</p>
+<p>把这些标记想成定义 git reset 操作的作用域就容易理解多了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/101448-f5a4bdc6e0f750fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="scope-of-reset.png" /></p>
+<p>当你传入 HEAD 以外的其他提交的时候要格外小心，因为 reset 操作会重写当前分支的历史。正如 rebase 黄金法则所说的，在公共分支上这样做可能会引起严重的后果。下表总结了 reset、checkout 和 revert 应用到文件层面和提交层面的常用场景。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用域</th>
+<th>常用情景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git reset</td>
+<td>提交层面</td>
+<td>在私有分支上舍弃一些没有提交的更改</td>
+</tr>
+<tr>
+<td>git reset</td>
+<td>文件层面</td>
+<td>将文件从缓存区中移除</td>
+</tr>
+<tr>
+<td>git checkout</td>
+<td>提交层面</td>
+<td>切换分支或查看旧版本</td>
+</tr>
+<tr>
+<td>git checkout</td>
+<td>文件层面</td>
+<td>舍弃工作目录中的更改</td>
+</tr>
+<tr>
+<td>git revert</td>
+<td>提交层面</td>
+<td>在公共分支上回滚更改</td>
+</tr>
+<tr>
+<td>git revert</td>
+<td>文件层面</td>
+<td>（然而并没有）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-ci-变红之后的操作指导">3. CI 变红之后的操作指导</h2>
+<h3 id="31-责任人">3.1 责任人</h3>
+<ul>
+<li>
+<p>(1) 提交之后 Working Directory 或 Stage Area 是否存在未 commit 的修改</p>
+<ul>
+<li>如果存在未 commit 的修改</li>
+</ul>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git stash  <span class="hljs-comment"># 保存目前的修改，工作区和暂存区内容回到问题提交点的状态 </span>
+<span class="hljs-variable">$ </span>git status <span class="hljs-comment"># 确认状态是否正确 </span></code></pre></div>
+<ul>
+<li>
+<p>(2) 运行测试</p>
+<ul>
+<li>
+<p>测试未通过，说明 push 之前没有在本地运行测试，未按照 check-in dance 的步骤提交代码</p>
+<p><strong>可以自己打脸提醒一下，不要再犯</strong>，暂时放下其他工作，开始全力 Debug 吧</p>
+</li>
+<li>
+<p>测试通过，说明很有可能是因为本地环境与 CI 环境不同，比如数据不一致等原因</p>
+<p>可以自己打脸清醒一下，暂时放下其他工作，开始全力 Debug 吧</p>
+</li>
+</ul>
+</li>
+<li>
+<p>(3) bug 修复流程</p>
+</li>
+</ul>
+<div><pre class="hljs"><code>$ git checkout -b hot-<span class="hljs-built_in">fix</span>   # 创建并切换到 hot-<span class="hljs-built_in">fix</span> 分支，在该分支修复 bug</code></pre></div>
+<ul>
+<li>(4) 15分钟之内，是否完成了 bug 修复</li>
+</ul>
+<p>完成了 bug 修复，并在本地经过了测试验证</p>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git add .                   <span class="hljs-comment"># 将修改保存到暂存区，准备提交</span>
+<span class="hljs-variable">$ </span>git commit -m &lt;message&gt;     <span class="hljs-comment"># 将修改提交到 hot-fix 分支</span>
+<span class="hljs-variable">$ </span>git checkout master         <span class="hljs-comment"># 切换到 master 分支</span>
+<span class="hljs-variable">$ </span>git rebase master hot-fix   <span class="hljs-comment"># 将 bug 修改过程在 master 分支重演</span>
+<span class="hljs-variable">$ </span>git pull --rebase           <span class="hljs-comment"># 原则上 CI 红了其他人不能提交，这一步可以忽略</span>
+<span class="hljs-variable">$ </span>git push                    <span class="hljs-comment"># 将修改提交到远端</span></code></pre></div>
+<p>未完成 bug 修复</p>
+<div><pre class="hljs"><code><span class="hljs-meta">$ </span><span class="language-bash">git stash                   <span class="hljs-comment"># 保存在 hot-fix 分支未完成的修复工作</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout master         <span class="hljs-comment"># 切换到 master 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git revert &lt;commit <span class="hljs-built_in">hash</span>&gt;    <span class="hljs-comment"># 创建一个 revert 提交撤销引入 bug 的修改</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git pull --rebase           <span class="hljs-comment"># 原则上 CI 红了其他人不能提交，这一步可以忽略</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git push                    <span class="hljs-comment"># 回退 CI 的代码，先修复 CI，保证其他人可以提交</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout hot-fix        <span class="hljs-comment"># 切换回 hot-fix 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git stash pop               <span class="hljs-comment"># 恢复目前已经进行的修复工作，继续修复</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git add .                   <span class="hljs-comment"># 修复完成，将修改保存到暂存区，准备提交</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git commit -m &lt;message&gt;     <span class="hljs-comment"># 将修改提交到 hot-fix 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git checkout master         <span class="hljs-comment"># 切换到 master 分支</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git rebase master hot-fix   <span class="hljs-comment"># 将 bug 修改过程在 master 分支重演</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git pull --rebase           <span class="hljs-comment"># 原则上 CI 红了其他人不能提交，这一步可以忽略</span></span>
+<span class="hljs-meta">$ </span><span class="language-bash">git push                    <span class="hljs-comment"># 将修改提交到远端</span></span>    </code></pre></div>
+<h3 id="32-其他成员">3.2 其他成员</h3>
+<ol>
+<li>
+<p><strong>CI 变红之后暂停提交代码，直至 CI 变绿</strong></p>
+</li>
+<li>
+<p>CI 变绿之后</p>
+</li>
+</ol>
+<div><pre class="hljs"><code><span class="hljs-variable">$ </span>git stash                        <span class="hljs-comment"># 保存目前的工作，如果工作区和暂存区是干净的，忽略此步骤</span>
+<span class="hljs-variable">$ </span>git pull --rebase                <span class="hljs-comment"># 拉取最新的修复之后的代码</span>
+<span class="hljs-variable">$ </span>git stash pop                    <span class="hljs-comment"># 恢复当前工作区，继续工作</span></code></pre></div>
+<h2 id="4-参考文献">4. 参考文献</h2>
+<ol>
+<li><a title="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9" href="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9">代码回滚：Reset、Checkout、Revert-的选择</a></li>
+<li><a title="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging" href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging">Git Branch and Merging</a></li>
+</ol>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

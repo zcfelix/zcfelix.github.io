@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>Spring-Boot 中的洋葱架构 - zcfelix</title>
+  </head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zcfelix</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">Spring-Boot 中的洋葱架构</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1689057609323"
+                  >2023-07-11 14:40</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1689061142402"
+                  >2023-07-11 15:39</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">Architecture</span>
+              
+              <span class="keyword">SpringBoot</span>
+              
+              <span class="keyword">Onion Architecture</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h2 id="1-目录结构">1. 目录结构</h2>
+<p>本项目的代码按照“洋葱架构”进行组织。如图所示，代码分为四个层次：<br />
+<img src="https://zcfelix-images.oss-cn-shenzhen.aliyuncs.com/joplin-pics/9a61bd43-d3a5-4ad0-b284-cf808e7b5205.png" alt="洋葱架构" /></p>
+<ul>
+<li>User Interface / Infrastructure</li>
+<li>Application Service</li>
+<li>Domain Service</li>
+<li>Domain Model</li>
+</ul>
+<p>需要注意的是，代码的依赖是单向的：即外层依赖内层或同层，禁止反向依赖。最里层的 Domain Model 包含最核心的业务逻辑，只依赖自己。</p>
+<h2 id="2-基于-spring-boot-的洋葱架构">2. 基于 Spring Boot 的洋葱架构</h2>
+<ul>
+<li>所有可以复用的业务逻辑应该写在 Domain Model 层中。</li>
+<li>Domain Service 层应该尽量薄，理想情况下应该只包含 repository 的接口定义和注解。</li>
+<li>如果需要用 QueryDsl 定制查询，应该把接口定义在 Domain Service 层，把实现写在 User Interface 层。</li>
+<li>每增加一个 RESTful 接口，都要在 Application Service 和 User Interface 层的 Controller 上增加一个函数。</li>
+<li>Controller 中的每个函数只有一行代码，负责把 HTTP 协议和 JSON 格式映射到 Application Service 上。</li>
+<li>Application Service 层应当编排业务逻辑，把 Domain Model 层、Domain Service 层和外部依赖组装起来。</li>
+<li>为了适应 Spring Boot 的约定，对洋葱架构需要有所调整，我们允许本应属于外层的职责，以注解的形式配置在内层。
+<ul>
+<li>例如，用注解方式编写的 SQL 语句可以放在 Domain Service 层，但以 Java 函数编写的 SQL 查询的实现不能放在 Domain Service 层而必须放在 User Interface 层。</li>
+<li>再如，以 <code>javax.validation</code> 注解表示的校验逻辑可以放在 Domain Model 层，但是以 Java 函数编写的校验逻辑不能放在 Domain Model 层而必须写在 Application Service 层。</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-洋葱架构各层职责速查表">3. 洋葱架构各层职责速查表</h2>
+<table class="jop-noMdConv">
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">职责</th>
+		<th class="jop-noMdConv">描述</th>
+		<th class="jop-noMdConv">Domain Model</th>
+		<th class="jop-noMdConv">Domain Service</th>
+		<th class="jop-noMdConv">Application Service</th>
+		<th class="jop-noMdConv">User Interface</th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">聚合根</th>
+		<th class="jop-noMdConv">可复用的充血模型</th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">其他实体对象和值对象</th>
+		<th class="jop-noMdConv">可复用的充血模型</th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">O/R Mapping</th>
+		<th class="jop-noMdConv">注解（JPA）</th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+		<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">应用服务</th>
+		<th class="jop-noMdConv">难以复用的业务逻辑编排，与 RESTful 接口一一对应</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+		<tr class="jop-noMdConv">
+		<th class="jop-noMdConv">控制器</th>
+		<th class="jop-noMdConv">映射 HTTP 协议到服务，与 RESTful 接口一一对应</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv">√</th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td rowspan="4" class="jop-noMdConv">资源库</td>
+		<td class="jop-noMdConv">接口</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">注解（Spring Data）</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">实现</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">配置</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<th rowspan="3" class="jop-noMdConv">外部服务客户端</th>
+		<th class="jop-noMdConv">接口</th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv"></th>
+		<th class="jop-noMdConv">√</th>
+		<th class="jop-noMdConv"></th>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">注解（Open Feign）</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">配置</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td rowspan="3" class="jop-noMdConv">数据传输对象</td>
+		<td class="jop-noMdConv">借用现有的值对象或实体对象作为数据传输对象</td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">外部服务所需的数据传输对象</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">定制的数据传输对象，如 HttpError</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td rowspan="3" class="jop-noMdConv">数据校验</td>
+		<td class="jop-noMdConv">注解（JSR 380）</td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">模型手动校验</td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">参数手动校验</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+		<td class="jop-noMdConv"></td>
+	</tr>
+	<tr class="jop-noMdConv">
+		<td class="jop-noMdConv">其他配置</td>
+		<td class="jop-noMdConv">错误处理、序列化、JSON 格式转换、RESTful 链接</td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv"></td>
+		<td class="jop-noMdConv">√</td>
+	</tr>
+</table>
+</div>
+      </article>
+    </div>
+  </body>
+</html>
